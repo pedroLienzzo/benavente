@@ -11,22 +11,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { generateExcel } from "@/lib/excelUtils"
 import { Skeleton } from "@/components/ui/skeleton"
 
-interface Linea {
-  _id: string
-  parteId: string
-  fecha: string
-  conductor: string
-  transportista: string
-  vehiculo: string
-  cliente: string
-  lugarCarga: string
-  lugarDescarga: string
-  espera: string
-  trabajo: string
-  toneladas: number
-  material: string
-  estado: "Pendiente" | "Completado"
-}
+import { Linea } from "@/types/linea"
 
 export default function LineasPage() {
   const [lineas, setLineas] = useState<Linea[]>([])

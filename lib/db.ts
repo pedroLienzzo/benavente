@@ -1,5 +1,5 @@
 import dbConnect from "./mongodb"
-import ParteTrabajo from "../models/ParteTrabajo"
+import { ParteTrabajo } from "@/schemas/ParteTrabajoSchema"
 import User from "../models/User"
 import jwt from "jsonwebtoken"
 import type { ParteTrabajo as ParteTrabajoType } from "@/types/parteTrabajo"

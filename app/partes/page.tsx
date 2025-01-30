@@ -12,17 +12,7 @@ import { generateExcel } from "@/lib/excelUtils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useRouter } from "next/navigation"
 
-interface ParteTrabajo {
-  _id: string
-  fecha: string
-  matricula: string
-  kilometros: number
-  conductor: string
-  transportista: string
-  estado: "Pendiente" | "Completado"
-  lineas: any[]
-  jornada: string
-}
+import { ParteTrabajo } from "@/types/parte"
 
 export default function PartesPage() {
   const [partes, setPartes] = useState<ParteTrabajo[]>([])

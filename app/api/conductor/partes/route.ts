@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
 import dbConnect from "@/lib/mongodb"
-import ParteTrabajo from "@/models/ParteTrabajo"
 import { cookies } from "next/headers"
 import jwt from "jsonwebtoken"
 import Conductor from "@/models/Conductor"
+import { ParteTrabajo } from "@/schemas/ParteTrabajoSchema"
 
 export async function GET() {
   try {

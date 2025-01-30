@@ -10,35 +10,7 @@ import Link from "next/link"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useToast } from "@/components/ui/use-toast"
 
-interface LineaParte {
-  cliente: string
-  lugarCarga: string
-  lugarDescarga: string
-  espera: string
-  trabajo: string
-  toneladas: number
-  material: string
-  jornada: string
-}
-
-interface ParteTrabajo {
-  fecha: string
-  matricula: string
-  kilometros: number
-  conductor: string
-  transportista: string
-  jornada: string
-  estado: "Pendiente" | "Completado"
-  lineas: LineaParte[]
-}
-
-interface ParteData {
-  conductores: { _id: string; nombre: string }[]
-  transportistas: { _id: string; nombre: string }[]
-  vehiculos: { _id: string; matricula: string }[]
-  clientes: { _id: string; nombre: string }[]
-  materiales: { _id: string; nombre: string }[]
-}
+import { LineaParte, ParteTrabajo, ParteData } from "@/types/parte"
 
 export default function NuevoPartePage() {
   const router = useRouter()
@@ -68,6 +40,7 @@ export default function NuevoPartePage() {
         trabajo: "",
         toneladas: 0,
         material: "",
+        jornada: "",
       },
     ],
   })

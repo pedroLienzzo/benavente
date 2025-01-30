@@ -1,19 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useAuth } from "../providers/AuthProvider"
 import { useRouter } from "next/navigation"
 import { Plus, Share2, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-
-interface ParteTrabajo {
-  _id: string
-  fecha: string
-  matricula: string
-  kilometros: number
-  lineas: any[]
-}
+import { ParteTrabajo } from "@/types/parte"
+import { useAuth } from "@/app/providers/AuthProvider"
 
 export default function ConductorDashboard() {
   const { conductor } = useAuth()
