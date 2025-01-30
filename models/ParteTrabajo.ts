@@ -29,6 +29,11 @@ const LineaParteSchema = new mongoose.Schema({
     type: String,
     required: [true, "Por favor, proporcione el material"],
   },
+  jornada: {
+    type: String,
+    required: [true, "Por favor, proporcione la jornada"],
+    enum: ["manana", "tarde", "noche", "completa"],
+  },
 })
 
 const ParteTrabajoSchema = new mongoose.Schema(
@@ -53,23 +58,31 @@ const ParteTrabajoSchema = new mongoose.Schema(
       type: String,
       required: [true, "Por favor, proporcione un transportista"],
     },
-    jornada: {
-      type: String,
-      required: [true, "Por favor, proporcione la jornada"],
-    },
     estado: {
       type: String,
       enum: ["Pendiente", "Completado"],
       default: "Pendiente",
     },
-    lineas: [LineaParteSchema],
+    lineas: {
+      type: [LineaParteSchema],
+      required: true,
+      validate: {
+        validator: function(lineas: any[]) {
+          return lineas.length > 0;
+        },
+        message: "Debe haber al menos una línea en el parte"
+      }
+    },
   },
   {
     timestamps: true,
-  },
+  }
 )
 
-const ParteTrabajo = mongoose.models.ParteTrabajo || mongoose.model("ParteTrabajo", ParteTrabajoSchema)
+// Clear any existing model before creating a new one
+mongoose.models = {};
+
+const ParteTrabajo = mongoose.model("ParteTrabajo", ParteTrabajoSchema)
 
 export default ParteTrabajo
 

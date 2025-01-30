@@ -225,7 +225,6 @@ export default function PartesPage() {
               <TableHead className="font-semibold">Transportista</TableHead>
               <TableHead className="font-semibold">Nº Líneas</TableHead>
               <TableHead className="font-semibold">Estado</TableHead>
-              <TableHead className="font-semibold">Jornada</TableHead>
               <TableHead className="font-semibold">Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -254,9 +253,7 @@ export default function PartesPage() {
                   <TableCell>
                     <Skeleton className="h-6 w-20 rounded-full" />
                   </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-20" />
-                  </TableCell>
+               
                   <TableCell>
                     <Skeleton className="h-4 w-20" />
                   </TableCell>
@@ -278,7 +275,7 @@ export default function PartesPage() {
                       {parte.estado}
                     </span>
                   </TableCell>
-                  <TableCell>{parte.jornada}</TableCell>
+              
                   <TableCell>
                     <div className="flex gap-2">
                       <Button

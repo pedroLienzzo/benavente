@@ -18,6 +18,7 @@ interface LineaParte {
   trabajo: string
   toneladas: number
   material: string
+  jornada: string
 }
 
 interface ParteTrabajo {
@@ -27,7 +28,6 @@ interface ParteTrabajo {
   kilometros: number
   conductor: string
   transportista: string
-  jornada: string
   estado: "Pendiente" | "Completado"
   lineas: LineaParte[]
 }
@@ -37,7 +37,6 @@ interface ParteData {
   transportistas: { _id: string; nombre: string }[]
   vehiculos: { _id: string; matricula: string }[]
   clientes: { _id: string; nombre: string }[]
-  jornadas: { _id: string; nombre: string }[]
   materiales: { _id: string; nombre: string }[]
 }
 
@@ -49,7 +48,6 @@ export default function EditarPartePage() {
   const [parteData, setParteData] = useState<ParteData>({
     conductores: [],
     transportistas: [],
-    jornadas: [],
     vehiculos: [],
     clientes: [],
     materiales: [],
@@ -151,6 +149,7 @@ export default function EditarPartePage() {
           trabajo: "",
           toneladas: 0,
           material: "",
+          jornada: "",
         },
       ],
     })
@@ -163,7 +162,6 @@ export default function EditarPartePage() {
     if (!parte?.matricula) errors.push("Por favor, seleccione una matrícula")
     if (!parte?.conductor) errors.push("Por favor, seleccione un conductor")
     if (!parte?.transportista) errors.push("Por favor, seleccione un transportista")
-    if (!parte?.jornada) errors.push("Por favor, seleccione un tipo de jornada")
 
     parte?.lineas.forEach((linea, index) => {
       if (!linea.cliente) errors.push(`Línea ${index + 1}: Por favor, seleccione un cliente`)
@@ -172,6 +170,7 @@ export default function EditarPartePage() {
       if (!linea.espera) errors.push(`Línea ${index + 1}: Por favor, ingrese el tiempo de espera`)
       if (!linea.trabajo) errors.push(`Línea ${index + 1}: Por favor, ingrese el tiempo de trabajo`)
       if (!linea.material) errors.push(`Línea ${index + 1}: Por favor, seleccione el material`)
+      if (!linea.jornada) errors.push("Por favor, seleccione un tipo de jornada")
     })
 
     return errors
@@ -312,17 +311,7 @@ export default function EditarPartePage() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={parte?.jornada} onValueChange={(value) => handleSelectChange(value, "jornada")}>
-              <SelectTrigger className="border-[#dadada]">
-                <SelectValue placeholder="Jornada" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="manana">Mañana</SelectItem>
-                <SelectItem value="tarde">Tarde</SelectItem>
-                <SelectItem value="noche">Noche</SelectItem>
-                <SelectItem value="completa">Completa</SelectItem>
-              </SelectContent>
-            </Select>
+            
           </div>
         </div>
 
@@ -402,6 +391,17 @@ export default function EditarPartePage() {
                   ))}
                 </SelectContent>
               </Select>
+              <Select value={linea.jornada} onValueChange={(value) => handleSelectChange(value, "jornada", index)}>
+        <SelectTrigger className="border-[#dadada]">
+          <SelectValue placeholder="Jornada" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="manana">Mañana</SelectItem>
+          <SelectItem value="tarde">Tarde</SelectItem>
+          <SelectItem value="noche">Noche</SelectItem>
+          <SelectItem value="completa">Completa</SelectItem>
+        </SelectContent>
+      </Select>
             </div>
           </div>
         ))}

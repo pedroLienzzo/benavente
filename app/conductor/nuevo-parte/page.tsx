@@ -19,6 +19,7 @@ interface LineaParte {
   trabajo: string
   toneladas: number
   material: string
+  jornada: string
 }
 
 interface ParteTrabajo {
@@ -28,7 +29,6 @@ interface ParteTrabajo {
   conductor: string
   transportista: string
   estado: "Pendiente" | "Completado"
-  jornada: string
   lineas: LineaParte[]
 }
 
@@ -58,7 +58,6 @@ export default function NuevoParteConductorPage() {
     conductor: conductor?.nombre || "",
     transportista: "",
     estado: "Pendiente",
-    jornada: "",
     lineas: [
       {
         cliente: "",
@@ -68,6 +67,7 @@ export default function NuevoParteConductorPage() {
         trabajo: "",
         toneladas: 0,
         material: "",
+        jornada: "",
       },
     ],
   })
@@ -183,6 +183,7 @@ export default function NuevoParteConductorPage() {
           trabajo: "",
           toneladas: 0,
           material: "",
+          jornada: "",
         },
       ],
     })
@@ -194,8 +195,7 @@ export default function NuevoParteConductorPage() {
     if (!parte.fecha) errors.push("Por favor, seleccione una fecha")
     if (!parte.matricula) errors.push("Por favor, seleccione una matrícula")
     if (!parte.transportista) errors.push("Por favor, seleccione un transportista")
-    if (!parte.jornada) errors.push("Por favor, seleccione un tipo de jornada")
-
+    
     parte.lineas.forEach((linea, index) => {
       if (!linea.cliente) errors.push(`Línea ${index + 1}: Por favor, seleccione un cliente`)
       if (!linea.lugarCarga) errors.push(`Línea ${index + 1}: Por favor, ingrese un lugar de carga`)
@@ -203,6 +203,7 @@ export default function NuevoParteConductorPage() {
       if (!linea.espera) errors.push(`Línea ${index + 1}: Por favor, ingrese el tiempo de espera`)
       if (!linea.trabajo) errors.push(`Línea ${index + 1}: Por favor, ingrese el tiempo de trabajo`)
       if (!linea.material) errors.push(`Línea ${index + 1}: Por favor, seleccione el material`)
+      if (!linea.jornada) errors.push(`Línea ${index + 1}: Por favor, seleccione un tipo de jornada`)
     })
 
     return errors
@@ -354,111 +355,100 @@ export default function NuevoParteConductorPage() {
                   )}
                 </SelectContent>
               </Select>
-              <Select value={parte.jornada} onValueChange={(value) => handleSelectChange(value, "jornada")}>
-                <SelectTrigger className="border-[#dadada]">
-                  <SelectValue placeholder="Jornada" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="manana">Mañana</SelectItem>
-                  <SelectItem value="tarde">Tarde</SelectItem>
-                  <SelectItem value="noche">Noche</SelectItem>
-                  <SelectItem value="completa">Completa</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
           {/* Líneas */}
-          {parte.lineas.map((linea, index) => (
-            <div key={index} className="bg-white rounded-xl border border-[#dadada] p-6">
-              <h2 className="text-[#002fff] font-medium mb-6">Línea {index + 1}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
-                <Select value={linea.cliente} onValueChange={(value) => handleSelectChange(value, "cliente", index)}>
-                  <SelectTrigger className="border-[#dadada]">
-                    <SelectValue placeholder="Cliente" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {parteData.clientes && parteData.clientes.length > 0 ? (
-                      parteData.clientes.map((cliente) => (
-                        <SelectItem key={cliente._id} value={cliente.nombre}>
-                          {cliente.nombre}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="no_clientes" disabled>
-                        No hay clientes disponibles
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-                <Input
-                  name="lugarCarga"
-                  placeholder="Lugar de carga"
-                  value={linea.lugarCarga}
-                  onChange={(e) => handleInputChange(e, index)}
-                  className="border-[#dadada]"
-                  required
-                />
-                <Input
-                  name="lugarDescarga"
-                  placeholder="Lugar de descarga"
-                  value={linea.lugarDescarga}
-                  onChange={(e) => handleInputChange(e, index)}
-                  className="border-[#dadada]"
-                  required
-                />
-                <div className="relative">
-                  <Clock className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <Input
-                    name="espera"
-                    placeholder="Espera"
-                    value={linea.espera}
-                    onChange={(e) => handleInputChange(e, index)}
-                    className="border-[#dadada] pr-10"
-                    required
-                  />
-                </div>
-                <div className="relative">
-                  <Clock className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <Input
-                    name="trabajo"
-                    placeholder="Trabajo"
-                    value={linea.trabajo}
-                    onChange={(e) => handleInputChange(e, index)}
-                    className="border-[#dadada] pr-10"
-                    required
-                  />
-                </div>
-                <Input
-                  name="toneladas"
-                  type="number"
-                  placeholder="Tm."
-                  value={linea.toneladas}
-                  onChange={(e) => handleInputChange(e, index)}
-                  className="border-[#dadada]"
-                  required
-                />
-                <Select value={linea.material} onValueChange={(value) => handleSelectChange(value, "material", index)}>
-                  <SelectTrigger className="border-[#dadada]">
-                    <SelectValue placeholder="Material" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {parteData.materiales && parteData.materiales.length > 0 ? (
-                      parteData.materiales.map((material) => (
-                        <SelectItem key={material._id} value={material.nombre}>
-                          {material.nombre}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="no_materiales" disabled>
-                        No hay materiales disponibles
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+          {/* Líneas */}
+{parte?.lineas?.map((linea, index) => (
+  <div key={index} className="bg-white rounded-xl border border-[#dadada] p-6">
+    <h2 className="text-[#002fff] font-medium mb-6">Línea {index + 1}</h2>
+    <div className="grid grid-cols-8 gap-4">  {/* Changed to 8 columns to include jornada */}
+      <Select value={linea.cliente} onValueChange={(value) => handleSelectChange(value, "cliente", index)}>
+        <SelectTrigger className="border-[#dadada]">
+          <SelectValue placeholder="Cliente" />
+        </SelectTrigger>
+        <SelectContent>
+          {parteData.clientes.map((cliente) => (
+            <SelectItem key={cliente._id} value={cliente.nombre}>
+              {cliente.nombre}
+            </SelectItem>
           ))}
+        </SelectContent>
+      </Select>
+      <Input
+        name="lugarCarga"
+        placeholder="Lugar de carga"
+        value={linea.lugarCarga}
+        onChange={(e) => handleInputChange(e, index)}
+        className="border-[#dadada]"
+        required
+      />
+      <Input
+        name="lugarDescarga"
+        placeholder="Lugar de descarga"
+        value={linea.lugarDescarga}
+        onChange={(e) => handleInputChange(e, index)}
+        className="border-[#dadada]"
+        required
+      />
+      <div className="relative">
+        <Clock className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        <Input
+          name="espera"
+          placeholder="Espera"
+          value={linea.espera}
+          onChange={(e) => handleInputChange(e, index)}
+          className="border-[#dadada] pr-10"
+          required
+        />
+      </div>
+      <div className="relative">
+        <Clock className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        <Input
+          name="trabajo"
+          placeholder="Trabajo"
+          value={linea.trabajo}
+          onChange={(e) => handleInputChange(e, index)}
+          className="border-[#dadada] pr-10"
+          required
+        />
+      </div>
+      <Input
+        name="toneladas"
+        type="number"
+        placeholder="Tm."
+        value={linea.toneladas}
+        onChange={(e) => handleInputChange(e, index)}
+        className="border-[#dadada]"
+        required
+      />
+      <Select value={linea.material} onValueChange={(value) => handleSelectChange(value, "material", index)}>
+        <SelectTrigger className="border-[#dadada]">
+          <SelectValue placeholder="Material" />
+        </SelectTrigger>
+        <SelectContent>
+          {parteData.materiales.map((material) => (
+            <SelectItem key={material._id} value={material.nombre}>
+              {material.nombre}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select value={linea.jornada} onValueChange={(value) => handleSelectChange(value, "jornada", index)}>
+        <SelectTrigger className="border-[#dadada]">
+          <SelectValue placeholder="Jornada" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="manana">Mañana</SelectItem>
+          <SelectItem value="tarde">Tarde</SelectItem>
+          <SelectItem value="noche">Noche</SelectItem>
+          <SelectItem value="completa">Completa</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  </div>
+))}
 
           <Button
             type="button"
@@ -473,4 +463,3 @@ export default function NuevoParteConductorPage() {
     </div>
   )
 }
-
