@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ChevronLeft, Clock } from "lucide-react"
+import { ChevronLeft, Clock, X } from "lucide-react"
 import Link from "next/link"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useToast } from "@/components/ui/use-toast"
@@ -18,6 +18,7 @@ interface LineaParte {
   trabajo: string
   toneladas: number
   material: string
+  jornada: string
 }
 
 interface ParteTrabajo {
@@ -112,23 +113,23 @@ export default function NuevoPartePage() {
 
   const handleSelectChange = (value: string, field: string, index?: number) => {
     if (typeof index === "number") {
-      const newLineas = [...parte.lineas]
+      const newLineas = [...parte!.lineas]
       newLineas[index] = {
         ...newLineas[index],
         [field]: value,
       }
-      setParte({ ...parte, lineas: newLineas })
+      setParte({ ...parte!, lineas: newLineas })
     } else {
-      setParte({ ...parte, [field]: value })
+      setParte({ ...parte!, [field]: value })
     }
     setError("")
   }
 
   const addLinea = () => {
     setParte({
-      ...parte,
+      ...parte!,
       lineas: [
-        ...parte.lineas,
+        ...parte!.lineas,
         {
           cliente: "",
           lugarCarga: "",
@@ -137,8 +138,24 @@ export default function NuevoPartePage() {
           trabajo: "",
           toneladas: 0,
           material: "",
+          jornada: "",
         },
       ],
+    })
+  }
+
+  const removeLinea = (indexToRemove: number) => {
+    if (parte.lineas.length <= 1) {
+      toast({
+        title: "Error",
+        description: "Debe haber al menos una línea en el parte",
+        variant: "destructive",
+      })
+      return
+    }
+    setParte({
+      ...parte,
+      lineas: parte.lineas.filter((_, index) => index !== indexToRemove),
     })
   }
 
@@ -149,7 +166,6 @@ export default function NuevoPartePage() {
     if (!parte.matricula) errors.push("Por favor, seleccione una matrícula")
     if (!parte.conductor) errors.push("Por favor, seleccione un conductor")
     if (!parte.transportista) errors.push("Por favor, seleccione un transportista")
-    if (!parte.jornada) errors.push("Por favor, seleccione un tipo de jornada")
 
     parte.lineas.forEach((linea, index) => {
       if (!linea.cliente) errors.push(`Línea ${index + 1}: Por favor, seleccione un cliente`)
@@ -158,6 +174,7 @@ export default function NuevoPartePage() {
       if (!linea.espera) errors.push(`Línea ${index + 1}: Por favor, ingrese el tiempo de espera`)
       if (!linea.trabajo) errors.push(`Línea ${index + 1}: Por favor, ingrese el tiempo de trabajo`)
       if (!linea.material) errors.push(`Línea ${index + 1}: Por favor, seleccione el material`)
+      if (!linea.jornada) errors.push(`Línea ${index + 1}: Por favor, seleccione la jornada`)
     })
 
     return errors
@@ -241,149 +258,231 @@ export default function NuevoPartePage() {
         <div className="bg-white rounded-xl border border-[#dadada] p-6">
           <h2 className="text-[#002fff] font-medium mb-6">Información</h2>
           <div className="grid grid-cols-5 gap-4">
-            <Input
-              type="date"
-              name="fecha"
-              value={parte.fecha}
-              onChange={handleInputChange}
-              className="border-[#dadada]"
-              required
-            />
-            <Select value={parte.matricula} onValueChange={(value) => handleSelectChange(value, "matricula")}>
-              <SelectTrigger className="border-[#dadada]">
-                <SelectValue placeholder="Matrícula" />
-              </SelectTrigger>
-              <SelectContent>
-                {parteData.vehiculos.map((vehiculo) => (
-                  <SelectItem key={vehiculo._id} value={vehiculo.matricula}>
-                    {vehiculo.matricula}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Input
-              type="number"
-              name="kilometros"
-              placeholder="Kms"
-              value={parte.kilometros}
-              onChange={handleInputChange}
-              className="border-[#dadada]"
-              required
-            />
-            <Select value={parte.conductor} onValueChange={(value) => handleSelectChange(value, "conductor")}>
-              <SelectTrigger className="border-[#dadada]">
-                <SelectValue placeholder="Conductor" />
-              </SelectTrigger>
-              <SelectContent>
-                {parteData.conductores.map((conductor) => (
-                  <SelectItem key={conductor._id} value={conductor.nombre}>
-                    {conductor.nombre}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={parte.transportista} onValueChange={(value) => handleSelectChange(value, "transportista")}>
-              <SelectTrigger className="border-[#dadada]">
-                <SelectValue placeholder="Transportista" />
-              </SelectTrigger>
-              <SelectContent>
-                {parteData.transportistas.map((transportista) => (
-                  <SelectItem key={transportista._id} value={transportista.nombre}>
-                    {transportista.nombre}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={parte.jornada} onValueChange={(value) => handleSelectChange(value, "jornada")}>
+            <div className="space-y-2">
+              <label htmlFor="fecha" className="text-sm text-gray-600">
+                Fecha
+              </label>
+              <Input
+                id="fecha"
+                type="date"
+                name="fecha"
+                value={parte.fecha}
+                onChange={handleInputChange}
+                className="border-[#dadada]"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm text-gray-600">
+                Matrícula
+              </label>
+              <Select value={parte.matricula} onValueChange={(value) => handleSelectChange(value, "matricula")}>
                 <SelectTrigger className="border-[#dadada]">
-                  <SelectValue placeholder="Jornada" />
+                  <SelectValue placeholder="Seleccionar matrícula" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="manana">Mañana</SelectItem>
-                  <SelectItem value="tarde">Tarde</SelectItem>
-                  <SelectItem value="noche">Noche</SelectItem>
-                  <SelectItem value="completa">Completa</SelectItem>
+                  {parteData.vehiculos.map((vehiculo) => (
+                    <SelectItem key={vehiculo._id} value={vehiculo.matricula}>
+                      {vehiculo.matricula}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="kilometros" className="text-sm text-gray-600">
+                Kilómetros
+              </label>
+              <Input
+                id="kilometros"
+                type="number"
+                name="kilometros"
+                placeholder="Introducir kms"
+                value={parte.kilometros}
+                onChange={handleInputChange}
+                className="border-[#dadada]"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm text-gray-600">
+                Conductor
+              </label>
+              <Select value={parte.conductor} onValueChange={(value) => handleSelectChange(value, "conductor")}>
+                <SelectTrigger className="border-[#dadada]">
+                  <SelectValue placeholder="Seleccionar conductor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {parteData.conductores.map((conductor) => (
+                    <SelectItem key={conductor._id} value={conductor.nombre}>
+                      {conductor.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm text-gray-600">
+                Transportista
+              </label>
+              <Select value={parte.transportista} onValueChange={(value) => handleSelectChange(value, "transportista")}>
+                <SelectTrigger className="border-[#dadada]">
+                  <SelectValue placeholder="Seleccionar transportista" />
+                </SelectTrigger>
+                <SelectContent>
+                  {parteData.transportistas.map((transportista) => (
+                    <SelectItem key={transportista._id} value={transportista.nombre}>
+                      {transportista.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
         {/* Líneas */}
         {parte.lineas.map((linea, index) => (
           <div key={index} className="bg-white rounded-xl border border-[#dadada] p-6">
-            <h2 className="text-[#002fff] font-medium mb-6">Línea {index + 1}</h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-[#002fff] font-medium">Línea {index + 1}</h2>
+              <Button
+                type="button"
+                onClick={() => removeLinea(index)}
+                variant="ghost"
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <X className="w-4 h-4" /> Eliminar línea
+              </Button>
+            </div>
             <div className="grid grid-cols-7 gap-4">
-              <Select value={linea.cliente} onValueChange={(value) => handleSelectChange(value, "cliente", index)}>
-                <SelectTrigger className="border-[#dadada]">
-                  <SelectValue placeholder="Cliente" />
-                </SelectTrigger>
-                <SelectContent>
-                  {parteData.clientes.map((cliente) => (
-                    <SelectItem key={cliente._id} value={cliente.nombre}>
-                      {cliente.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Input
-                name="lugarCarga"
-                placeholder="Lugar de carga"
-                value={linea.lugarCarga}
-                onChange={(e) => handleInputChange(e, index)}
-                className="border-[#dadada]"
-                required
-              />
-              <Input
-                name="lugarDescarga"
-                placeholder="Lugar de descarga"
-                value={linea.lugarDescarga}
-                onChange={(e) => handleInputChange(e, index)}
-                className="border-[#dadada]"
-                required
-              />
-              <div className="relative">
-                <Clock className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <div className="space-y-2">
+                <label className="text-sm text-gray-600">
+                  Cliente
+                </label>
+                <Select value={linea.cliente} onValueChange={(value) => handleSelectChange(value, "cliente", index)}>
+                  <SelectTrigger className="border-[#dadada]">
+                    <SelectValue placeholder="Seleccionar cliente" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {parteData.clientes.map((cliente) => (
+                      <SelectItem key={cliente._id} value={cliente.nombre}>
+                        {cliente.nombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor={`lugarCarga-${index}`} className="text-sm text-gray-600">
+                  Lugar de carga
+                </label>
                 <Input
-                  name="espera"
-                  placeholder="Espera"
-                  value={linea.espera}
+                  id={`lugarCarga-${index}`}
+                  name="lugarCarga"
+                  placeholder="Introducir lugar"
+                  value={linea.lugarCarga}
                   onChange={(e) => handleInputChange(e, index)}
-                  className="border-[#dadada] pr-10"
+                  className="border-[#dadada]"
                   required
                 />
               </div>
-              <div className="relative">
-                <Clock className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <div className="space-y-2">
+                <label htmlFor={`lugarDescarga-${index}`} className="text-sm text-gray-600">
+                  Lugar de descarga
+                </label>
                 <Input
-                  name="trabajo"
-                  placeholder="Trabajo"
-                  value={linea.trabajo}
+                  id={`lugarDescarga-${index}`}
+                  name="lugarDescarga"
+                  placeholder="Introducir lugar"
+                  value={linea.lugarDescarga}
                   onChange={(e) => handleInputChange(e, index)}
-                  className="border-[#dadada] pr-10"
+                  className="border-[#dadada]"
                   required
                 />
               </div>
-              <Input
-                name="toneladas"
-                type="number"
-                placeholder="Tm."
-                value={linea.toneladas}
-                onChange={(e) => handleInputChange(e, index)}
-                className="border-[#dadada]"
-                required
-              />
-              <Select value={linea.material} onValueChange={(value) => handleSelectChange(value, "material", index)}>
-                <SelectTrigger className="border-[#dadada]">
-                  <SelectValue placeholder="Material" />
-                </SelectTrigger>
-                <SelectContent>
-                  {parteData.materiales.map((material) => (
-                    <SelectItem key={material._id} value={material.nombre}>
-                      {material.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <label htmlFor={`espera-${index}`} className="text-sm text-gray-600">
+                  Tiempo de espera
+                </label>
+                <div className="relative">
+                  <Clock className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <Input
+                    id={`espera-${index}`}
+                    name="espera"
+                    placeholder="HH:MM"
+                    value={linea.espera}
+                    onChange={(e) => handleInputChange(e, index)}
+                    className="border-[#dadada] pr-10"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor={`trabajo-${index}`} className="text-sm text-gray-600">
+                  Tiempo de trabajo
+                </label>
+                <div className="relative">
+                  <Clock className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <Input
+                    id={`trabajo-${index}`}
+                    name="trabajo"
+                    placeholder="HH:MM"
+                    value={linea.trabajo}
+                    onChange={(e) => handleInputChange(e, index)}
+                    className="border-[#dadada] pr-10"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor={`toneladas-${index}`} className="text-sm text-gray-600">
+                  Toneladas
+                </label>
+                <Input
+                  id={`toneladas-${index}`}
+                  name="toneladas"
+                  type="number"
+                  placeholder="Tm."
+                  value={linea.toneladas}
+                  onChange={(e) => handleInputChange(e, index)}
+                  className="border-[#dadada]"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm text-gray-600">
+                  Material
+                </label>
+                <Select value={linea.material} onValueChange={(value) => handleSelectChange(value, "material", index)}>
+                  <SelectTrigger className="border-[#dadada]">
+                    <SelectValue placeholder="Seleccionar material" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {parteData.materiales.map((material) => (
+                      <SelectItem key={material._id} value={material.nombre}>
+                        {material.nombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm text-gray-600">
+                  Jornada
+                </label>
+                <Select value={linea.jornada} onValueChange={(value) => handleSelectChange(value, "jornada", index)}>
+                  <SelectTrigger className="border-[#dadada]">
+                    <SelectValue placeholder="Seleccionar jornada" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="manana">Mañana</SelectItem>
+                    <SelectItem value="tarde">Tarde</SelectItem>
+                    <SelectItem value="noche">Noche</SelectItem>
+                    <SelectItem value="completa">Completa</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         ))}
