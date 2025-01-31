@@ -82,7 +82,7 @@ const ParteTrabajoSchema = new mongoose.Schema(
 // Clear any existing model before creating a new one
 mongoose.models = {};
 
-const ParteTrabajo = mongoose.model("ParteTrabajo", ParteTrabajoSchema)
+const ParteTrabajo = mongoose.model("partetrabajos", ParteTrabajoSchema)
 
 export default ParteTrabajo
 

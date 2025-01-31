@@ -261,7 +261,7 @@ export function ParteForm({
                     <SelectValue placeholder="Seleccionar conductor" />
                   </SelectTrigger>
                   <SelectContent>
-                    {parteData.conductores.map((conductor) => (
+                    {parteData?.conductores?.map((conductor) => (
                       <SelectItem key={conductor._id} value={conductor.nombre}>
                         {conductor.nombre}
                       </SelectItem>

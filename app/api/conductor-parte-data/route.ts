@@ -5,7 +5,7 @@ import Vehiculo from "@/models/Vehiculo"
 import Transportista from "@/models/Transportista"
 import Cliente from "@/models/Cliente"
 import Material from "@/models/Material"
-import { authOptions } from "@/app/api/auth/[...nextauth]/config"
+import { authOptions } from "../auth/[...nextauth]/route"
 
 export async function GET() {
   try {

@@ -17,8 +17,9 @@ declare module "next-auth" {
       email: string
       name: string
       type: string
-      transportista: string
-      vehiculo: string
+      role?: string
+      transportista?: string
+      vehiculo?: string
     }
   }
 } 

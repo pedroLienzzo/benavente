@@ -6,7 +6,8 @@ import User from "@/models/User"
 import Conductor from "@/models/Conductor"
 import dbConnect from "@/lib/mongodb"
 
-const handler = NextAuth({
+// Export authOptions as a separate object
+export const authOptions = {
   providers: [
     // Admin/User Login Provider
     CredentialsProvider({
@@ -96,16 +97,18 @@ const handler = NextAuth({
         token.role = user.role // for admin users
         token.transportista = user.transportista // for conductors
         token.vehiculo = user.vehiculo // for conductors
+        token.nombre = user.name // Add this line to include conductor's name
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id
-        session.user.type = token.type
-        session.user.role = token.role // for admin users
-        session.user.transportista = token.transportista // for conductors
-        session.user.vehiculo = token.vehiculo // for conductors
+        session.user.id = token.id as string
+        session.user.type = token.type as string
+        session.user.role = token.role as string // for admin users
+        session.user.transportista = token.transportista as string // for conductors
+        session.user.vehiculo = token.vehiculo as string // for conductors
+        session.user.nombre = token.nombre as string // Add this line
       }
       return session
     }
@@ -117,6 +120,8 @@ const handler = NextAuth({
   session: {
     strategy: "jwt"
   }
-})
+}
+
+const handler = NextAuth(authOptions)
 
 export { handler as GET, handler as POST }
