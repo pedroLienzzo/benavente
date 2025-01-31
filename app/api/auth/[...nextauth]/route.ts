@@ -56,21 +56,21 @@ export const authOptions = {
       },
       async authorize(credentials) {
         try {
-          console.log("1. Conductor auth starting with:", credentials?.correo)
+          // console.log("1. Conductor auth starting with:", credentials?.correo)
           await dbConnect()
           
           const conductor = await Conductor.findOne({ 
             correo: credentials?.correo 
           }).select("+contraseña")
           
-          console.log("2. Conductor found:", !!conductor)
+          // console.log("2. Conductor found:", !!conductor)
           if (!conductor) return null
           
           const isValid = await bcrypt.compare(
             credentials?.contraseña || '', 
             conductor.contraseña
           )
-          console.log("3. Password valid:", isValid)
+          // console.log("3. Password valid:", isValid)
           
           if (!isValid) return null
 

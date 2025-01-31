@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "../providers/AuthProvider"
+// import { useAuth } from "../providers/AuthProvider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
@@ -14,23 +14,23 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | string[]>("")
-  const { register } = useAuth()
+  // const { register } = useAuth()
   const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    try {
-      await register(name, email, password)
-      router.push("/")
-    } catch (err: any) {
-      if (err.details) {
-        setError(err.details)
-      } else {
-        setError(err.message || "Error en el registro. Por favor, inténtelo de nuevo.")
-      }
-    }
-  }
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault()
+  //   setError("")
+  //   try {
+  //     await register(name, email, password)
+  //     router.push("/")
+  //   } catch (err: any) {
+  //     if (err.details) {
+  //       setError(err.details)
+  //     } else {
+  //       setError(err.message || "Error en el registro. Por favor, inténtelo de nuevo.")
+  //     }
+  //   }
+  // }
 
   return (
     <div className="flex justify-center items-center min-h-screen">
@@ -38,7 +38,7 @@ export default function RegisterPage() {
         <CardHeader>
           <CardTitle>Registro</CardTitle>
         </CardHeader>
-        <CardContent>
+        {/* <CardContent>
           <form onSubmit={handleSubmit}>
             <div className="grid w-full items-center gap-4">
               <div className="flex flex-col space-y-1.5">
@@ -84,7 +84,7 @@ export default function RegisterPage() {
               Registrarse
             </Button>
           </form>
-        </CardContent>
+        </CardContent> */}
         <CardFooter className="flex justify-center">
           <Link href="/login" className="text-sm text-blue-500 hover:underline">
             ¿Ya tienes una cuenta? Inicia sesión

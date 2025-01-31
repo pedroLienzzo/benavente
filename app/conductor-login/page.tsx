@@ -22,13 +22,13 @@ export default function ConductorLoginPage() {
     setError("")
     
     try {
-      console.log("Attempting login with:", { correo, contraseña })
+      // console.log("Attempting login with:", { correo, contraseña })
       const result = await signIn("conductor-login", {
         correo: correo,
         contraseña: contraseña,
         redirect: false,
       })
-      console.log("Login result:", result)
+      // console.log("Login result:", result)
 
       if (result?.error) {
         setError("Credenciales inválidas")

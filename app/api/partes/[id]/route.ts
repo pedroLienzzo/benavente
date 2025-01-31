@@ -35,7 +35,7 @@ export async function DELETE(
     { params }: { params: { id: string } }
 ) {
     const id = params.id;
-    console.log("Attempting to delete parte with ID:", id);
+    // console.log("Attempting to delete parte with ID:", id);
 
     try {
         const db = await connectDB();
@@ -70,14 +70,14 @@ export async function PUT(
 
         const db = await connectDB();
         const collection = db.connection.db.collection('partetrabajos');
-        console.log("UPDATING COLLECTION: ", collection);
+        // console.log("UPDATING COLLECTION: ", collection);
 
         const result = await collection.updateOne(
             { _id: new ObjectId(params.id) },
             { $set: updateData }
         );
 
-        console.log("UPDATING RESULT: ", result);
+        // console.log("UPDATING RESULT: ", result);
 
         if (result.matchedCount === 0) {
             return NextResponse.json(

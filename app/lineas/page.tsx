@@ -39,7 +39,6 @@ export default function LineasPage() {
       const res = await fetch("/api/lineas")
       if (!res.ok) throw new Error("Error al obtener las líneas")
       const data = await res.json()
-      console.log("Frontend: Fetched lineas:", data)
       setLineas(data)
       setFilteredLineas(data)
     } catch (error) {
