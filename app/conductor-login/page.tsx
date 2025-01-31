@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "../providers/AuthProvider"
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -15,27 +15,34 @@ export default function ConductorLoginPage() {
   const [contraseña, setContraseña] = useState("")
   const [error, setError] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
-  const { loginConductor, conductor } = useAuth()
   const router = useRouter()
-
-  useEffect(() => {
-    if (conductor) {
-      router.push("/conductor-dashboard")
-    }
-  }, [conductor, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    
     try {
-      await loginConductor(correo, contraseña)
-    } catch (err: any) {
-      setError(err.message || "Error al iniciar sesión. Por favor, verifique sus credenciales.")
-    }
-  }
+      console.log("Attempting login with:", { correo, contraseña })
+      const result = await signIn("conductor-login", {
+        correo: correo,
+        contraseña: contraseña,
+        redirect: false,
+      })
+      console.log("Login result:", result)
 
-  if (conductor) {
-    return null
+      if (result?.error) {
+        setError("Credenciales inválidas")
+        return
+      }
+
+      if (result?.ok) {
+        router.push("/conductor-dashboard")
+        router.refresh()
+      }
+    } catch (err) {
+      console.error("Login error:", err)
+      setError("Error al iniciar sesión")
+    }
   }
 
   return (

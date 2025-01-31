@@ -1,37 +1,42 @@
 import { NextResponse } from "next/server"
-import connectDB from "@/lib/mongodb"
+import { getServerSession } from "next-auth"
+import dbConnect from "@/lib/mongodb"
 import Vehiculo from "@/models/Vehiculo"
+import Transportista from "@/models/Transportista"
 import Cliente from "@/models/Cliente"
 import Material from "@/models/Material"
-import Transportista from "@/models/Transportista"
-import Conductor from "@/models/Conductor"
+import { authOptions } from "@/app/api/auth/[...nextauth]/config"
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    await connectDB()
-    const conductores = await Conductor.find({}, 'matriculaAsignada')
-    const matriculasAsignadas = conductores.map(c => c.matriculaAsignada).filter(Boolean)
-    const [vehiculos, clientes, materiales, transportistas] = await Promise.all([
-      Vehiculo.find({}),
-      Cliente.find({}),
-      Material.find({}),
-      Transportista.find({})
-    ]);
+    console.log("1. Starting API request")
+    const session = await getServerSession(authOptions)
+    console.log("2. Session in API:", session)
 
-    const response = {
-      vehiculos: vehiculos.map(v => ({ _id: v._id, matricula: v.matricula })),
-      clientes: clientes.map(c => ({ _id: c._id, nombre: c.nombre })),
-      materiales: materiales.map(m => ({ _id: m._id, nombre: m.nombre })),
-      transportistas: transportistas.map(t => ({ _id: t._id, nombre: t.nombre }))
-    };
+    if (!session) {
+      console.log("3a. No session found")
+      return NextResponse.json({ error: "No autorizado - No session" }, { status: 401 })
+    }
 
-    return NextResponse.json(response);
-  
-  } catch (error) {
-    console.error('Error:', error);
+    await dbConnect()
+    const [vehiculos, transportistas, clientes, materiales] = await Promise.all([
+      Vehiculo.find({}).sort({ matricula: 1 }).lean(),
+      Transportista.find({}).sort({ nombre: 1 }).lean(),
+      Cliente.find({}).sort({ nombre: 1 }).lean(),
+      Material.find({}).sort({ nombre: 1 }).lean(),
+    ])
+
+    return NextResponse.json({
+      vehiculos,
+      transportistas,
+      clientes,
+      materiales,
+    })
+  } catch (error: any) {
+    console.error("API Error:", error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error.message || "Error interno del servidor" },
       { status: 500 }
-    );
+    )
   }
 }

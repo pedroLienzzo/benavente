@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -17,6 +17,7 @@ interface ParteFormProps {
   showConductorSelect?: boolean
   defaultConductor?: string
   isEditing?: boolean
+  initialParteData?: ParteData
 }
 
 export function ParteForm({
@@ -26,10 +27,11 @@ export function ParteForm({
   title,
   showConductorSelect = true,
   defaultConductor,
-  isEditing = false
+  isEditing = false,
+  initialParteData
 }: ParteFormProps) {
   const [error, setError] = useState<string | string[]>("")
-  const [parteData, setParteData] = useState<ParteData>({
+  const [parteData, setParteData] = useState<ParteData>(initialParteData || {
     conductores: [],
     transportistas: [],
     vehiculos: [],
@@ -56,22 +58,6 @@ export function ParteForm({
       }]
     }
   )
-
-  useEffect(() => {
-    fetchParteData()
-  }, [])
-
-  const fetchParteData = async () => {
-    try {
-      const res = await fetch("/api/parte-data")
-      if (!res.ok) throw new Error("Error al obtener los datos para el parte")
-      const data = await res.json()
-      setParteData(data)
-    } catch (error) {
-      console.error("Error fetching parte data:", error)
-      setError("No se pudieron cargar los datos para el parte")
-    }
-  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
     const { name, value } = e.target
@@ -237,7 +223,7 @@ export function ParteForm({
               <label className="text-sm text-gray-600">
                 Matrícula
               </label>
-              <Select value={parte.matricula} onValueChange={(value) => handleSelectChange(value, "matricula")}>
+              <Select value={parte?.matricula} onValueChange={(value) => handleSelectChange(value, "matricula")}>
                 <SelectTrigger className="border-[#dadada]">
                   <SelectValue placeholder="Seleccionar matrícula" />
                 </SelectTrigger>

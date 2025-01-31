@@ -1,26 +1,28 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Plus, Share2, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ParteTrabajo } from "@/types/parte"
-import { useAuth } from "@/app/providers/AuthProvider"
 
 export default function ConductorDashboard() {
-  const { conductor } = useAuth()
+  const { data: session, status } = useSession()
   const router = useRouter()
   const [partes, setPartes] = useState<ParteTrabajo[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (!conductor) {
+    if (status === "loading") return
+    
+    if (!session || session.user.type !== "conductor") {
       router.push("/conductor-login")
       return
     }
     fetchPartes()
-  }, [conductor, router])
+  }, [session, status, router])
 
   const fetchPartes = async () => {
     try {
@@ -35,7 +37,7 @@ export default function ConductorDashboard() {
     }
   }
 
-  if (!conductor) return null
+  if (status === "loading" || !session) return null
 
   return (
     <div className="min-h-screen bg-[#ffffff] px-4 pt-4 pb-20">
@@ -51,7 +53,7 @@ export default function ConductorDashboard() {
       {/* Header */}
       <div className="flex justify-between items-start mb-6">
         <div>
-          <p className="text-lg text-[#000000]">Hola, {conductor.nombre}</p>
+          <p className="text-lg text-[#000000]">Hola, {session.user.name}</p>
           <h1 className="text-3xl font-bold text-[#000000]">Partes de trabajo</h1>
         </div>
         <div className="flex items-center gap-2">

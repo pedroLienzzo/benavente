@@ -1,34 +1,79 @@
+// middleware.ts
+import { withAuth } from "next-auth/middleware"
 import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
 
-export function middleware(request: NextRequest) {
-  const authToken = request.cookies.get("auth_token")
-  const conductorAuthToken = request.cookies.get("conductor_auth_token")
+export default withAuth(
+  function middleware(req) {
+    const token = req.nextauth.token
+    const path = req.nextUrl.pathname
+    
+    // Allow access to conductor-login without redirection
+    if (path === "/conductor-login") {
+      return NextResponse.next()
+    }
 
-  // Public paths that don't require authentication
-  const publicPaths = ["/login", "/register", "/conductor-login"]
-  const isPublicPath = publicPaths.some((path) => request.nextUrl.pathname.startsWith(path))
+    // Redirect authenticated users away from auth pages
+    if (token && (path === "/login" || path === "/register")) {
+      return NextResponse.redirect(new URL("/", req.url))
+    }
 
-  // API paths that don't require authentication
-  const isApiAuthPath = request.nextUrl.pathname.startsWith("/api/auth")
+    // Redirect conductores to their dashboard
+    if (token?.type === "conductor" && path === "/") {
+      return NextResponse.redirect(new URL("/conductor-dashboard", req.url))
+    }
 
-  // Static files and other paths that should be ignored
-  const isStaticPath = request.nextUrl.pathname.match(/\.(js|css|ico|png|jpg|jpeg|svg|woff|woff2)$/)
+    // Protect conductor routes
+    if (path.startsWith("/conductor") && token?.type !== "conductor") {
+      return NextResponse.redirect(new URL("/conductor-login", req.url))
+    }
 
-  // If it's a public path, API path, or static file, allow access
-  if (isPublicPath || isApiAuthPath || isStaticPath) {
+    // Protect admin routes
+    if (path.startsWith("/admin") && token?.role !== "admin") {
+      return NextResponse.redirect(new URL("/", req.url))
+    }
+
     return NextResponse.next()
+  },
+  {
+    callbacks: {
+      authorized: ({ token, req }) => {
+        const path = req.nextUrl.pathname
+        
+        // Allow public paths
+        if (path === "/login" || path === "/conductor-login" || path === "/register") {
+          return true
+        }
+        
+        // Require authentication for all other routes
+        return !!token
+      },
+    },
   }
-
-  // Check for conductor-specific paths
-  const isConductorPath =
-    request.nextUrl.pathname.startsWith("/conductor") || request.nextUrl.pathname === "/conductor-dashboard"
-
-  // Allow access to all paths without redirection
-  return NextResponse.next()
-}
+)
 
 export const config = {
-  matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    // Auth pages
+    '/login',
+    '/conductor-login',
+    '/register',
+    
+    // Admin paths
+    '/',
+    '/dashboard',
+    '/partes/:path*',  // Covers /partes, /partes/nuevo, /partes/editar/:id
+    '/lineas',
+    '/conductores',
+    '/transportistas',
+    '/clientes',
+    '/materiales',
+    
+    // Conductor paths
+    '/conductor-dashboard',
+    '/conductor/partes/:path*',  // Covers /conductor/partes/[id]
+    '/conductor/nuevo-parte',
+    
+    // Exclude Next.js internals
+    '/((?!api|_next/static|_next/image|favicon.ico).*)'
+  ]
 }
-

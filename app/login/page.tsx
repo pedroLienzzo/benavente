@@ -1,41 +1,42 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ClipboardCheck } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useAuth } from "@/app/providers/AuthProvider"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
-  const { login, user } = useAuth()
   const router = useRouter()
-
-  useEffect(() => {
-    if (user) {
-      router.push("/")
-    }
-  }, [user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    
     try {
-      await login(email, password)
-    } catch (err: any) {
-      setError(err.message || "Error al iniciar sesión. Por favor, verifique sus credenciales.")
-    }
-  }
+      const result = await signIn("user-login", {
+        email,
+        password,
+        redirect: false,
+      })
 
-  if (user) {
-    return null
+      if (result?.error) {
+        setError("Credenciales inválidas")
+      } else {
+        router.push("/") // Redirect to dashboard on success
+        router.refresh() // Refresh to update session state
+      }
+    } catch (err: any) {
+      setError("Error al iniciar sesión. Por favor, inténtelo de nuevo.")
+    }
   }
 
   return (

@@ -2,23 +2,26 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { useAuth } from "@/app/providers/AuthProvider"
+import { signOut, useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { ClipboardCheck, LogOut, Plus, Share2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const Navbar = () => {
-  const { user, logout } = useAuth()
+  const { data: session } = useSession()
   const pathname = usePathname()
   const router = useRouter()
 
-  if (!user) return null
+  // Only show navbar for admin users
+  if (!session?.user || session.user.type !== "user" || session.user.role !== "admin") {
+    return null
+  }
 
   const isActive = (path: string) => pathname === path
 
   const handleLogout = async () => {
     try {
-      await logout()
+      await signOut({ redirect: true, callbackUrl: "/login" })
     } catch (error) {
       console.error("Error al cerrar sesión:", error)
     }

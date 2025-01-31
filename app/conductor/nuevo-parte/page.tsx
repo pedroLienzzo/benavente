@@ -2,21 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { ParteForm } from "@/components/ParteForm"
 import { ParteTrabajo } from "@/types/parte"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "@/app/providers/AuthProvider"
-
-interface LineaParte {
-  cliente: string
-  lugarCarga: string
-  lugarDescarga: string
-  espera: string
-  trabajo: string
-  toneladas: number
-  material: string
-  jornada: string
-}
 
 interface ParteData {
   transportistas: { _id: string; nombre: string }[]
@@ -28,7 +17,7 @@ interface ParteData {
 export default function NuevoParteConductorPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const { conductor } = useAuth()
+  const { data: session, status } = useSession()
   const [error, setError] = useState<string | string[]>("")
   const [isLoading, setIsLoading] = useState(true)
   const [parteData, setParteData] = useState<ParteData>({
@@ -41,7 +30,7 @@ export default function NuevoParteConductorPage() {
     fecha: new Date().toISOString().split("T")[0],
     matricula: "",
     kilometros: 0,
-    conductor: conductor?.nombre || "",
+    conductor: "",
     transportista: "",
     estado: "Pendiente",
     lineas: [
@@ -59,66 +48,59 @@ export default function NuevoParteConductorPage() {
   })
 
   useEffect(() => {
-    console.log("Conductor data:", conductor);
-    console.log("Initial parte state:", parte);
-  }, [conductor, parte]);
+    console.log("1. Page Effect - Status:", status)
+    console.log("2. Page Effect - Session:", session)
 
-  useEffect(() => {
-    console.log("useEffect triggered with conductor:", conductor);
-    const checkAuthAndFetchData = async () => {
-      if (!conductor) {
-        router.push("/conductor-login");
-        return;
-      }
-      try {
-        const authRes = await fetch("/api/auth/conductor/me");
-        if (!authRes.ok) {
-          throw new Error("Authentication failed");
-        }
-        await fetchParteData();
-      } catch (error) {
-        toast({
-          title: "Error de autenticación",
-          description: "Por favor, inicie sesión nuevamente.",
-          variant: "destructive",
-        });
-        router.push("/conductor-login");
-      }
-    };
-
-    checkAuthAndFetchData();
-  }, [conductor, router]);
-
-  const fetchParteData = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch("/api/conductor-parte-data");
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`API Error: ${res.status} - ${text.slice(0, 100)}`);
-      }
-      const data = await res.json();
-
-      // Update parte state with fetched data if necessary
-      setParte(prev => ({
-        ...prev,
-        // Example: Update matricula and transportista if needed
-        matricula: data.vehiculos[0]?.matricula || prev.matricula,
-        transportista: data.transportistas[0]?.nombre || prev.transportista,
-      }));
-
-      setParteData(data);
-
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Unknown error",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+    if (status === "loading") return
+    
+    if (!session || session.user.type !== "conductor") {
+      console.log("3. Redirecting - No valid session")
+      router.push("/conductor-login")
+      return
     }
-  }
+
+    setParte(prev => ({
+      ...prev,
+      conductor: session.user.name
+    }))
+
+    const fetchData = async () => {
+      try {
+        console.log("4. Fetching data")
+        const res = await fetch("/api/conductor-parte-data", {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include'
+        })
+        console.log("5. Response status:", res.status)
+        
+        if (!res.ok) {
+          const errorData = await res.json()
+          console.log("6. Error data:", errorData)
+          throw new Error(errorData.error || "Error al obtener los datos")
+        }
+        
+        const data = await res.json()
+        console.log("6. Success data:", data)
+
+        setParte(prev => ({
+          ...prev,
+          conductor: session?.user?.name || prev.conductor,
+          matricula: data.vehiculos[0]?.matricula || prev.matricula,
+          transportista: data.transportistas[0]?.nombre || prev.transportista,
+        }))
+
+        setParteData(data)
+      } catch (error) {
+        console.error("7. Fetch error:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [session, status, router])
 
   const handleSubmit = async (parteData: ParteTrabajo) => {
     console.log("Submitting parte:", parteData)
@@ -152,10 +134,13 @@ export default function NuevoParteConductorPage() {
     }
   }
 
-  if (!conductor) return null
-
-  if (isLoading) {
+  if (status === "loading" || isLoading) {
     return <div className="flex justify-center items-center min-h-screen">Cargando...</div>
+  }
+
+  if (!session?.user) {
+    router.push("/conductor-login")
+    return null
   }
 
   return (
@@ -163,8 +148,10 @@ export default function NuevoParteConductorPage() {
       onSubmit={handleSubmit}
       backUrl="/conductor-dashboard"
       title="Nuevo parte de trabajo"
-      showConductorSelect={false}
-      defaultConductor={conductor.nombre}
+      showConductorSelect={true}
+      defaultConductor={session.user.name}
+      initialParteData={parteData}
+      initialValues={parte}
     />
   )
 }
