@@ -11,8 +11,8 @@ export async function GET() {
       Transportista.find({}).sort({ nombre: 1 }).lean(),
     ])
 
-    console.log("Vehículos obtenidos:", vehiculos)
-    console.log("Transportistas obtenidos:", transportistas)
+    // console.log("Vehículos obtenidos:", vehiculos)
+    // console.log("Transportistas obtenidos:", transportistas)
 
     return NextResponse.json({
       vehiculos,

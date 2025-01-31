@@ -39,8 +39,8 @@ export async function getParteTrabajoById(id: string) {
 export async function createParteTrabajo(data: ParteTrabajoType) {
   await dbConnect()
   const parteTrabajo = await ParteTrabajo.create(data)
-  console.log("Received data in createParteTrabajo: ", data)
-  console.log("Created parte:", parteTrabajo)
+  // console.log("Received data in createParteTrabajo: ", data)
+  // console.log("Created parte:", parteTrabajo)
   return parteTrabajo.toObject()
 }
 
@@ -72,7 +72,7 @@ export async function getAllLineas() {
     }))
     return [...acc, ...lineasConInfo]
   }, [])
-  console.log("Fetched lineas:", lineas)
+  // console.log("Fetched lineas:", lineas)
   return lineas
 }
 

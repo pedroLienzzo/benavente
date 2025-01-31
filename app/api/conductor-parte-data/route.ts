@@ -10,12 +10,12 @@ import { authOptions } from "../auth/[...nextauth]/route"
 
 export async function GET() {
   try {
-    console.log("1. Starting API request")
+    // console.log("1. Starting API request")
     const session = await getServerSession(authOptions)
-    console.log("2. Session in API:", session)
+    // console.log("2. Session in API:", session)
 
     if (!session) {
-      console.log("3a. No session found")
+      // console.log("3a. No session found")
       return NextResponse.json({ error: "No autorizado - No session" }, { status: 401 })
     }
 

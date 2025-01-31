@@ -5,7 +5,7 @@ import type { ParteTrabajo } from "@/types/parteTrabajo"
 export async function GET() {
   try {
     const partes = await getPartesTrabajo()
-    console.log("API: Fetched partes:", partes)
+    // console.log("API: Fetched partes:", partes)
     return NextResponse.json(partes)
   } catch (error) {
     console.error("API: Error fetching partes:", error)
@@ -16,7 +16,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const data = await request.json()
-    console.log("API: Received raw data:", JSON.stringify(data, null, 2))
+    // console.log("API: Received raw data:", JSON.stringify(data, null, 2))
 
     // Validate required fields before creating
     if (!data.fecha) throw new Error("Fecha is required")
@@ -37,10 +37,10 @@ export async function POST(request: Request) {
       }))
     }
 
-    console.log("API: Processed data before creation:", JSON.stringify(data, null, 2))
+    // console.log("API: Processed data before creation:", JSON.stringify(data, null, 2))
     
     const parte = await createParteTrabajo(data)
-    console.log("API: Successfully created parte:", JSON.stringify(parte, null, 2))
+    // console.log("API: Successfully created parte:", JSON.stringify(parte, null, 2))
     
     return NextResponse.json(parte)
   } catch (error: any) {

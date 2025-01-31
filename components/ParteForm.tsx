@@ -110,10 +110,10 @@ export function ParteForm({
   }, [userType, isEditing])
 
   // Remove the session effect that was overwriting the state
-  useEffect(() => {
-    console.log("Current parte state:", parte)
-    console.log("Current session:", session)
-  }, [parte, session])
+  // useEffect(() => {
+  //   console.log("Current parte state:", parte)
+  //   console.log("Current session:", session)
+  // }, [parte, session])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
     const { name, value } = e.target
