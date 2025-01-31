@@ -5,6 +5,7 @@ import Vehiculo from "@/models/Vehiculo"
 import Transportista from "@/models/Transportista"
 import Cliente from "@/models/Cliente"
 import Material from "@/models/Material"
+import Conductor from "@/models/Conductor"
 import { authOptions } from "../auth/[...nextauth]/route"
 
 export async function GET() {
@@ -19,18 +20,39 @@ export async function GET() {
     }
 
     await dbConnect()
-    const [vehiculos, transportistas, clientes, materiales] = await Promise.all([
-      Vehiculo.find({}).sort({ matricula: 1 }).lean(),
-      Transportista.find({}).sort({ nombre: 1 }).lean(),
-      Cliente.find({}).sort({ nombre: 1 }).lean(),
-      Material.find({}).sort({ nombre: 1 }).lean(),
+    
+    // Corrected Promise.all with proper collection queries
+    const [conductores, vehiculos, transportistas, clientes, materiales] = await Promise.all([
+      Conductor.find({}).sort({ nombre: 1 }).lean(), // Conductores collection
+      Vehiculo.find({}).sort({ matricula: 1 }).lean(), // Vehiculos collection (with matricula)
+      Transportista.find({}).sort({ nombre: 1 }).lean(), // Transportistas collection
+      Cliente.find({}).sort({ nombre: 1 }).lean(), // Clientes collection
+      Material.find({}).sort({ nombre: 1 }).lean(), // Materiales collection
     ])
 
     return NextResponse.json({
-      vehiculos,
-      transportistas,
-      clientes,
-      materiales,
+      conductores: conductores.map(c => ({
+        _id: c._id,
+        nombre: c.nombre,
+        matricula: c.matriculaAsignada,
+        transportista: c.transportistaAsociado
+      })),
+      vehiculos: vehiculos.map(v => ({
+        _id: v._id,
+        matricula: v.matricula
+      })),
+      transportistas: transportistas.map(t => ({
+        _id: t._id,
+        nombre: t.nombre
+      })),
+      clientes: clientes.map(c => ({
+        _id: c._id,
+        nombre: c.nombre
+      })),
+      materiales: materiales.map(m => ({
+        _id: m._id,
+        nombre: m.nombre
+      }))
     })
   } catch (error: any) {
     console.error("API Error:", error)

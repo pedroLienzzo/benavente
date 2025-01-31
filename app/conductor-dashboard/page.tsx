@@ -21,7 +21,6 @@ export default function ConductorDashboard() {
       router.push("/conductor-login")
       return
     }
-    console.log("Client-side Session Data:", session)
     fetchPartes()
   }, [session, status, router])
 

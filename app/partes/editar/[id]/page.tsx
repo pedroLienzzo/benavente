@@ -14,20 +14,25 @@ export default function EditarPartePage() {
 
   useEffect(() => {
     fetchParte()
+
   }, [id])
+
+  useEffect(() => {
+    console.log("parte in edit: ", parte)
+  }, [parte])
 
   const fetchParte = async () => {
     try {
       const res = await fetch(`/api/partes/${id}`)
-
-      if (!res.ok) {
-        const errorData = await res.json()
-        console.error("Error response data:", errorData)
-        throw new Error("Error al obtener el parte")
-      }
-
+      if (!res.ok) throw new Error("Error al obtener el parte")
+      
       const { data } = await res.json()
-      setParte(data)
+      // Format the date and structure the parte data
+      const formattedParte = {
+        ...data,
+        fecha: new Date(data.fecha).toISOString().split('T')[0], // Format date to YYYY-MM-DD
+      }
+      setParte(formattedParte)
     } catch (error) {
       console.error("Error fetching parte:", error)
       toast({
@@ -59,13 +64,16 @@ export default function EditarPartePage() {
 
   if (!parte) return <div>Cargando...</div>
 
+  console.log("initial Data: ", parte)
+
   return (
     <ParteForm
-      initialData={parte}
-      onSubmit={handleSubmit}
-      backUrl="/partes"
-      title="Editar parte de trabajo"
-      isEditing={true}
-    />
+    initialData={parte}
+    defaultConductor={parte.conductor} // Add this line to pass conductor
+    onSubmit={handleSubmit}
+    backUrl="/partes"
+    title="Editar parte de trabajo"
+    isEditing={true}
+  />
   )
 }

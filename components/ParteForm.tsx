@@ -1,13 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChevronLeft, Clock, X } from "lucide-react"
 import Link from "next/link"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { LineaParte, ParteTrabajo, ParteData } from "@/types/parte"
+import { ParteTrabajo, ParteData } from "@/types/parte"
+import { useSession } from "next-auth/react"
 
 interface ParteFormProps {
   initialData?: ParteTrabajo | null
@@ -30,6 +31,7 @@ export function ParteForm({
   isEditing = false,
   initialParteData
 }: ParteFormProps) {
+  const { data: session } = useSession()
   const [error, setError] = useState<string | string[]>("")
   const [parteData, setParteData] = useState<ParteData>(initialParteData || {
     conductores: [],
@@ -38,13 +40,15 @@ export function ParteForm({
     clientes: [],
     materiales: [],
   })
-  const [parte, setParte] = useState<ParteTrabajo>(
-    initialData || {
-      fecha: "",
-      matricula: "",
+
+  // Initialize parte with session data if available
+  const [parte, setParte] = useState<ParteTrabajo>(() => {
+    const defaultParte = initialData || {
+      fecha: new Date().toISOString().split("T")[0],
+      matricula: session?.user?.vehiculo || "",
       kilometros: 0,
-      conductor: defaultConductor || "",
-      transportista: "",
+      conductor: session?.user?.name || defaultConductor || "",
+      transportista: session?.user?.transportista || "",
       estado: "Pendiente",
       lineas: [{
         cliente: "",
@@ -57,7 +61,54 @@ export function ParteForm({
         jornada: "",
       }]
     }
-  )
+    return defaultParte
+  })
+
+  // Update parte when session changes
+  useEffect(() => {
+    if (session?.user) {
+      console.log("Updating parte with session data:", session.user)
+      setParte(prev => ({
+        ...prev,
+        conductor: session.user.name || prev.conductor,
+        matricula: session.user.vehiculo || prev.matricula,
+        transportista: session.user.transportista || prev.transportista
+      }))
+    }
+  }, [session])
+
+  // Log state changes for debugging
+  useEffect(() => {
+    console.log("Current parte state:", parte)
+    console.log("Current session:", session)
+    console.log("Default conductor: ", defaultConductor)
+  }, [parte, session])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch("/api/conductor-parte-data", {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include'
+        })
+
+        if (!res.ok) {
+          throw new Error("Error al obtener los datos")
+        }
+
+        const data = await res.json()
+        
+        setParteData(data)
+        console.log("Parte Data: ", parteData)
+      } catch (error) {
+        console.error("Error fetching data:", error)
+      }
+    }
+    console.log("initialData: ", initialData)
+    fetchData()
+  }, [])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
     const { name, value } = e.target
@@ -223,12 +274,12 @@ export function ParteForm({
               <label className="text-sm text-gray-600">
                 Matrícula
               </label>
-              <Select value={parte?.matricula} onValueChange={(value) => handleSelectChange(value, "matricula")}>
+              <Select value={parte.matricula} onValueChange={(value) => handleSelectChange(value, "matricula")}>
                 <SelectTrigger className="border-[#dadada]">
                   <SelectValue placeholder="Seleccionar matrícula" />
                 </SelectTrigger>
                 <SelectContent>
-                  {parteData.vehiculos.map((vehiculo) => (
+                  {parteData?.vehiculos?.map((vehiculo) => (
                     <SelectItem key={vehiculo._id} value={vehiculo.matricula}>
                       {vehiculo.matricula}
                     </SelectItem>
@@ -279,7 +330,7 @@ export function ParteForm({
                   <SelectValue placeholder="Seleccionar transportista" />
                 </SelectTrigger>
                 <SelectContent>
-                  {parteData.transportistas.map((transportista) => (
+                  {parteData?.transportistas?.map((transportista) => (
                     <SelectItem key={transportista._id} value={transportista.nombre}>
                       {transportista.nombre}
                     </SelectItem>
@@ -313,7 +364,7 @@ export function ParteForm({
                     <SelectValue placeholder="Seleccionar cliente" />
                   </SelectTrigger>
                   <SelectContent>
-                    {parteData.clientes.map((cliente) => (
+                    {parteData?.clientes?.map((cliente) => (
                       <SelectItem key={cliente._id} value={cliente.nombre}>
                         {cliente.nombre}
                       </SelectItem>
@@ -413,7 +464,7 @@ export function ParteForm({
                     <SelectValue placeholder="Seleccionar material" />
                   </SelectTrigger>
                   <SelectContent>
-                    {parteData.materiales.map((material) => (
+                    {parteData?.materiales?.map((material) => (
                       <SelectItem key={material._id} value={material.nombre}>
                         {material.nombre}
                       </SelectItem>
@@ -453,4 +504,4 @@ export function ParteForm({
       </form>
     </div>
   )
-} 
+}

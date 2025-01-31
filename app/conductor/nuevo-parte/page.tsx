@@ -48,20 +48,23 @@ export default function NuevoParteConductorPage() {
   })
 
   useEffect(() => {
-    console.log("1. Page Effect - Status:", status)
-    console.log("2. Page Effect - Session:", session)
+    // console.log("1. Page Effect - Status:", status)
+    // console.log("2. Page Effect - Session:", session)
 
     if (status === "loading") return
-    
+
     if (!session || session.user.type !== "conductor") {
-      console.log("3. Redirecting - No valid session")
+      // console.log("3. Redirecting - No valid session")
       router.push("/conductor-login")
       return
     }
 
+    // Update the parte state with session data
     setParte(prev => ({
       ...prev,
-      conductor: session.user.name
+      conductor: session.user.name,
+      matricula: session.user.vehiculo,
+      transportista: session.user.transportista
     }))
 
     const fetchData = async () => {
@@ -73,23 +76,16 @@ export default function NuevoParteConductorPage() {
           },
           credentials: 'include'
         })
-        console.log("5. Response status:", res.status)
+        // console.log("5. Response status:", res.status)
         
         if (!res.ok) {
           const errorData = await res.json()
           console.log("6. Error data:", errorData)
           throw new Error(errorData.error || "Error al obtener los datos")
         }
-        
+
         const data = await res.json()
         console.log("6. Success data:", data)
-
-        setParte(prev => ({
-          ...prev,
-          conductor: session?.user?.name || prev.conductor,
-          matricula: data.vehiculos[0]?.matricula || prev.matricula,
-          transportista: data.transportistas[0]?.nombre || prev.transportista,
-        }))
 
         setParteData(data)
       } catch (error) {
@@ -151,7 +147,7 @@ export default function NuevoParteConductorPage() {
       showConductorSelect={true}
       defaultConductor={session.user.name}
       initialParteData={parteData}
-      initialValues={parte}
+      initialValues={parte} // Pass the updated parte state
     />
   )
 }
