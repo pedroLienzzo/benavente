@@ -15,10 +15,14 @@ interface ParteFormProps {
   onSubmit: (parte: ParteTrabajo) => Promise<void>
   backUrl: string
   title: string
-  showConductorSelect?: boolean
-  defaultConductor?: string
   isEditing?: boolean
   initialParteData?: ParteData
+  userType: 'admin' | 'conductor'
+  defaultValues?: {
+    conductor?: string
+    matricula?: string
+    transportista?: string
+  }
 }
 
 export function ParteForm({
@@ -26,10 +30,9 @@ export function ParteForm({
   onSubmit,
   backUrl,
   title,
-  showConductorSelect = true,
-  defaultConductor,
   isEditing = false,
-  initialParteData
+  initialParteData,
+  userType,
 }: ParteFormProps) {
   const { data: session } = useSession()
   const [error, setError] = useState<string | string[]>("")
@@ -41,14 +44,39 @@ export function ParteForm({
     materiales: [],
   })
 
-  // Initialize parte with session data if available
+  // Initialize parte with either initialData or default values
   const [parte, setParte] = useState<ParteTrabajo>(() => {
-    const defaultParte = initialData || {
+    if (initialData) return initialData
+
+    // Only use session data for new partes from conductor
+    if (userType === 'conductor' && session?.user) {
+      return {
+        fecha: new Date().toISOString().split("T")[0],
+        matricula: session.user.vehiculo || "",
+        kilometros: 0,
+        conductor: session.user.name || "",
+        transportista: session.user.transportista || "",
+        estado: "Pendiente",
+        lineas: [{
+          cliente: "",
+          lugarCarga: "",
+          lugarDescarga: "",
+          espera: "",
+          trabajo: "",
+          toneladas: 0,
+          material: "",
+          jornada: "",
+        }]
+      }
+    }
+
+    // Default empty parte for admin
+    return {
       fecha: new Date().toISOString().split("T")[0],
-      matricula: session?.user?.vehiculo || "",
+      matricula: "",
       kilometros: 0,
-      conductor: session?.user?.name || defaultConductor || "",
-      transportista: session?.user?.transportista || "",
+      conductor: "",
+      transportista: "",
       estado: "Pendiente",
       lineas: [{
         cliente: "",
@@ -61,54 +89,31 @@ export function ParteForm({
         jornada: "",
       }]
     }
-    return defaultParte
   })
 
-  // Update parte when session changes
+  // Fetch data only if we're in admin mode or editing
   useEffect(() => {
-    if (session?.user) {
-      console.log("Updating parte with session data:", session.user)
-      setParte(prev => ({
-        ...prev,
-        conductor: session.user.name || prev.conductor,
-        matricula: session.user.vehiculo || prev.matricula,
-        transportista: session.user.transportista || prev.transportista
-      }))
-    }
-  }, [session])
+    if (userType === 'conductor' && !isEditing) return
 
-  // Log state changes for debugging
-  useEffect(() => {
-    console.log("Current parte state:", parte)
-    console.log("Current session:", session)
-    console.log("Default conductor: ", defaultConductor)
-  }, [parte, session])
-
-  useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("/api/conductor-parte-data", {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include'
-        })
-
-        if (!res.ok) {
-          throw new Error("Error al obtener los datos")
-        }
-
+        const res = await fetch("/api/conductor-parte-data")
+        if (!res.ok) throw new Error("Error al obtener los datos")
         const data = await res.json()
-        
         setParteData(data)
-        console.log("Parte Data: ", parteData)
       } catch (error) {
         console.error("Error fetching data:", error)
       }
     }
-    console.log("initialData: ", initialData)
+
     fetchData()
-  }, [])
+  }, [userType, isEditing])
+
+  // Remove the session effect that was overwriting the state
+  useEffect(() => {
+    console.log("Current parte state:", parte)
+    console.log("Current session:", session)
+  }, [parte, session])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
     const { name, value } = e.target
@@ -178,7 +183,7 @@ export function ParteForm({
 
     if (!parte.fecha) errors.push("Por favor, seleccione una fecha")
     if (!parte.matricula) errors.push("Por favor, seleccione una matrícula")
-    if (showConductorSelect && !parte.conductor) errors.push("Por favor, seleccione un conductor")
+    if (!parte.conductor) errors.push("Por favor, seleccione un conductor")
     if (!parte.transportista) errors.push("Por favor, seleccione un transportista")
 
     parte.lineas.forEach((linea, index) => {
@@ -302,12 +307,15 @@ export function ParteForm({
                 required
               />
             </div>
-            {showConductorSelect ? (
-              <div className="space-y-2">
+            <div className="space-y-2">
                 <label className="text-sm text-gray-600">
                   Conductor
                 </label>
-                <Select value={parte.conductor} onValueChange={(value) => handleSelectChange(value, "conductor")}>
+                <Select 
+                  value={parte.conductor} 
+                  onValueChange={(value) => handleSelectChange(value, "conductor")}
+                  disabled={userType === 'conductor' && !isEditing}
+                >
                   <SelectTrigger className="border-[#dadada]">
                     <SelectValue placeholder="Seleccionar conductor" />
                   </SelectTrigger>
@@ -320,7 +328,6 @@ export function ParteForm({
                   </SelectContent>
                 </Select>
               </div>
-            ) : null}
             <div className="space-y-2">
               <label className="text-sm text-gray-600">
                 Transportista

@@ -5,21 +5,19 @@ import { useEffect, useState } from "react"
 import { ParteForm } from "@/components/ParteForm"
 import { ParteTrabajo } from "@/types/parte"
 import { useToast } from "@/components/ui/use-toast"
+import { useSession } from "next-auth/react"
 
 export default function EditarPartePage() {
   const router = useRouter()
   const { id } = useParams()
   const { toast } = useToast()
   const [parte, setParte] = useState<ParteTrabajo | null>(null)
+  const session = useSession()
 
   useEffect(() => {
     fetchParte()
 
   }, [id])
-
-  useEffect(() => {
-    console.log("parte in edit: ", parte)
-  }, [parte])
 
   const fetchParte = async () => {
     try {
@@ -68,12 +66,12 @@ export default function EditarPartePage() {
 
   return (
     <ParteForm
-    initialData={parte}
-    defaultConductor={parte.conductor} // Add this line to pass conductor
-    onSubmit={handleSubmit}
-    backUrl="/partes"
-    title="Editar parte de trabajo"
-    isEditing={true}
-  />
+      initialData={parte}
+      onSubmit={handleSubmit}
+      backUrl="/partes"
+      title="Editar parte de trabajo"
+      isEditing={true}
+      userType="admin"
+    />
   )
 }

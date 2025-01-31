@@ -39,7 +39,7 @@ export default function NuevoPartePage() {
       onSubmit={handleSubmit}
       backUrl="/partes"
       title="Nuevo parte de trabajo"
-      showConductorSelect={true}
+      userType="admin"
     />
   )
 }
