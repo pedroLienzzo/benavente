@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ParteForm } from "@/app/components/ParteForm"
+import { ParteForm } from "@/components/ParteForm"
 import { ParteTrabajo } from "@/types/parte"
 import { useToast } from "@/components/ui/use-toast"
 import { useAuth } from "@/app/providers/AuthProvider"
