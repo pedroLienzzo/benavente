@@ -225,8 +225,11 @@ export function ParteForm({
             {title}
           </Link>
           {isEditing && (
-            <Select value={parte.estado} onValueChange={(value) => handleSelectChange(value, "estado")}>
-              <SelectTrigger className="w-32 bg-[#ffa100] text-white border-0">
+            <Select 
+              value={parte.estado} 
+              onValueChange={(value) => handleSelectChange(value, "estado")}
+            >
+              <SelectTrigger className={`w-32 ${parte.estado === "Pendiente" ? "bg-[#ffa100] text-white" : "bg-green-100 text-green-800"} border-0`}>
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
@@ -260,7 +263,7 @@ export function ParteForm({
       <form onSubmit={handleFormSubmit} className="space-y-6">
         <div className="bg-white rounded-xl border border-[#dadada] p-6">
           <h2 className="text-[#002fff] font-medium mb-6">Información</h2>
-          <div className="grid grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
             <div className="space-y-2">
               <label htmlFor="fecha" className="text-sm text-gray-600">
                 Fecha
@@ -361,7 +364,7 @@ export function ParteForm({
                 <X className="w-4 h-4" /> Eliminar línea
               </Button>
             </div>
-            <div className="grid grid-cols-7 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <label className="text-sm text-gray-600">
                   Cliente

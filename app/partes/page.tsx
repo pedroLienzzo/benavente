@@ -259,8 +259,7 @@ export default function PartesPage() {
                   <TableCell>{parte.lineas.length}</TableCell>
                   <TableCell>
                     <span
-                      className={`px-3 py-1 rounded-full text-sm ${parte.estado === "Pendiente" ? "bg-[#ffa100] text-white" : "bg-green-100 text-green-800"
-                        }`}
+                      className={`px-3 py-1 rounded-full text-sm ${parte.estado === "Pendiente" ? "bg-[#ffa100] text-white" : parte.estado === "Completado" ? "bg-green-100 text-green-800" : ""}`}
                     >
                       {parte.estado}
                     </span>
