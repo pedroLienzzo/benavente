@@ -6,6 +6,7 @@ import { ParteForm } from "@/components/ParteForm"
 import { ParteTrabajo } from "@/types/parte"
 import { useToast } from "@/components/ui/use-toast"
 import { useSession } from "next-auth/react"
+import LoadingSpinner from "@/components/LoadingSpinner"
 
 export default function EditarPartePage() {
   const router = useRouter()
@@ -60,7 +61,8 @@ export default function EditarPartePage() {
     router.push("/partes")
   }
 
-  if (!parte) return <div>Cargando...</div>
+  if (!parte) return <LoadingSpinner />
+
 
   console.log("initial Data: ", parte)
 

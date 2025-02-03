@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react"
 import { ParteForm } from "@/components/ParteForm"
 import { ParteTrabajo } from "@/types/parte"
 import { useToast } from "@/components/ui/use-toast"
+import LoadingSpinner from "@/components/LoadingSpinner"
 
 interface ParteData {
   transportistas: { _id: string; nombre: string }[]
@@ -96,7 +97,7 @@ export default function NuevoParteConductorPage() {
     }
   }
 
-  if (status === "loading" || isLoading) return <div>Cargando...</div>
+  if (status === "loading" || isLoading) return <LoadingSpinner />
   if (!session?.user) {
     router.push("/conductor-login")
     return null

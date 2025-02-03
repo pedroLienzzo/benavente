@@ -43,6 +43,7 @@ export function ParteForm({
     clientes: [],
     materiales: [],
   })
+  const [errorFields, setErrorFields] = useState<{ [key: string]: boolean }>({})
 
   // Initialize parte with either initialData or default values
   const [parte, setParte] = useState<ParteTrabajo>(() => {
@@ -116,23 +117,61 @@ export function ParteForm({
   // }, [parte, session])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
 
-    if (typeof index === "number") {
-      const newLineas = [...parte.lineas]
-      newLineas[index] = {
-        ...newLineas[index],
-        [name]: name === "toneladas" ? Number(value) : value,
+    if (name === "espera" || name === "trabajo") {
+      const { name, value } = e.target;
+
+      // Allow users to type colons
+      let displayValue = value;
+
+      // Auto-insert colon after two digits if not already present
+      if (value.length === 2 && !value.includes(':')) {
+        displayValue = `${value}:`;
       }
-      setParte({ ...parte, lineas: newLineas })
+
+      // Update state with display value
+      if (typeof index === 'number') {
+        const newLineas = [...parte.lineas];
+        newLineas[index] = { ...newLineas[index], [name]: displayValue };
+        setParte({ ...parte, lineas: newLineas });
+      } else {
+        setParte({ ...parte, [name]: displayValue });
+      }
+    } else if (name === "kilometros" || name === "toneladas") {
+      const numericValue = Number(value);
+      if (numericValue > 0) {
+        if (typeof index === "number") {
+          const newLineas = [...parte.lineas];
+          newLineas[index] = {
+            ...newLineas[index],
+            [name]: numericValue,
+          };
+          setParte({ ...parte, lineas: newLineas });
+        } else {
+          setParte({
+            ...parte,
+            [name]: numericValue,
+          });
+        }
+      }
     } else {
-      setParte({
-        ...parte,
-        [name]: name === "kilometros" ? Number(value) : value,
-      })
+      if (typeof index === "number") {
+        const newLineas = [...parte.lineas];
+        newLineas[index] = {
+          ...newLineas[index],
+          [name]: name === "toneladas" ? Number(value) : value,
+        };
+        setParte({ ...parte, lineas: newLineas });
+      } else {
+        setParte({
+          ...parte,
+          [name]: name === "kilometros" ? Number(value) : value,
+        });
+      }
     }
-    setError("")
-  }
+    setError("");
+  };
 
   const handleSelectChange = (value: string, field: string, index?: number) => {
     if (typeof index === "number") {
@@ -180,22 +219,72 @@ export function ParteForm({
 
   const validateForm = () => {
     const errors: string[] = []
+    const newErrorFields: { [key: string]: boolean } = {}
 
-    if (!parte.fecha) errors.push("Por favor, seleccione una fecha")
-    if (!parte.matricula) errors.push("Por favor, seleccione una matrícula")
-    if (!parte.conductor) errors.push("Por favor, seleccione un conductor")
-    if (!parte.transportista) errors.push("Por favor, seleccione un transportista")
+    if (!parte.fecha) {
+      errors.push("Por favor, seleccione una fecha")
+      newErrorFields.fecha = true
+    }
+    if (!parte.matricula) {
+      errors.push("Por favor, seleccione una matrícula")
+      newErrorFields.matricula = true
+    }
+    // Validate "Kilómetros" and "Toneladas"
+    if (parte.kilometros <= 0) {
+      errors.push(`Kilómetros debe ser mayor que 0`)
+      newErrorFields.kilometros = true
+    }
+    if (!parte.conductor) {
+      errors.push("Por favor, seleccione un conductor")
+      newErrorFields.conductor = true
+    }
+    if (!parte.transportista) {
+      errors.push("Por favor, seleccione un transportista")
+      newErrorFields.transportista = true
+    }
 
     parte.lineas.forEach((linea, index) => {
-      if (!linea.cliente) errors.push(`Línea ${index + 1}: Por favor, seleccione un cliente`)
-      if (!linea.lugarCarga) errors.push(`Línea ${index + 1}: Por favor, ingrese un lugar de carga`)
-      if (!linea.lugarDescarga) errors.push(`Línea ${index + 1}: Por favor, ingrese un lugar de descarga`)
-      if (!linea.espera) errors.push(`Línea ${index + 1}: Por favor, ingrese el tiempo de espera`)
-      if (!linea.trabajo) errors.push(`Línea ${index + 1}: Por favor, ingrese el tiempo de trabajo`)
-      if (!linea.material) errors.push(`Línea ${index + 1}: Por favor, seleccione el material`)
-      if (!linea.jornada) errors.push(`Línea ${index + 1}: Por favor, seleccione un tipo de jornada`)
+      if (!linea.cliente) {
+        errors.push(`Línea ${index + 1}: Por favor, seleccione un cliente`)
+        newErrorFields[`cliente-${index}`] = true
+      }
+      if (!linea.lugarCarga) {
+        errors.push(`Línea ${index + 1}: Por favor, ingrese un lugar de carga`)
+        newErrorFields[`lugarCarga-${index}`] = true
+      }
+      if (!linea.lugarDescarga) {
+        errors.push(`Línea ${index + 1}: Por favor, ingrese un lugar de descarga`)
+        newErrorFields[`lugarDescarga-${index}`] = true
+      }
+
+      // Validate "Tiempo de espera"
+      if (!linea.espera || !/^\d{1,2}:\d{2}$/.test(linea.espera)) {
+        errors.push(`Línea ${index + 1}: Por favor, ingrese un tiempo de espera válido (HH:MM)`)
+        newErrorFields[`espera-${index}`] = true
+      }
+
+      // Validate "Tiempo de trabajo"
+      if (!linea.trabajo || !/^\d{1,2}:\d{2}$/.test(linea.trabajo)) {
+        errors.push(`Línea ${index + 1}: Por favor, ingrese un tiempo de trabajo válido (HH:MM)`)
+        newErrorFields[`trabajo-${index}`] = true
+      }
+
+      if (linea.toneladas <= 0) {
+        errors.push(`Línea ${index + 1}: Toneladas debe ser mayor que 0`)
+        newErrorFields[`toneladas-${index}`] = true
+      }
+
+      if (!linea.material) {
+        errors.push(`Línea ${index + 1}: Por favor, seleccione el material`)
+        newErrorFields[`material-${index}`] = true
+      }
+      if (!linea.jornada) {
+        errors.push(`Línea ${index + 1}: Por favor, seleccione un tipo de jornada`)
+        newErrorFields[`jornada-${index}`] = true
+      }
     })
 
+    setErrorFields(newErrorFields)
     return errors
   }
 
@@ -225,8 +314,8 @@ export function ParteForm({
             {title}
           </Link>
           {isEditing && (
-            <Select 
-              value={parte.estado} 
+            <Select
+              value={parte.estado}
               onValueChange={(value) => handleSelectChange(value, "estado")}
             >
               <SelectTrigger className={`w-32 ${parte.estado === "Pendiente" ? "bg-[#ffa100] text-white" : "bg-green-100 text-green-800"} border-0`}>
@@ -274,7 +363,7 @@ export function ParteForm({
                 name="fecha"
                 value={parte.fecha}
                 onChange={handleInputChange}
-                className="border-[#dadada]"
+                className={`border-[#dadada] ${errorFields.fecha ? "border-red-500" : ""}`}
                 required
               />
             </div>
@@ -283,7 +372,7 @@ export function ParteForm({
                 Matrícula
               </label>
               <Select value={parte.matricula} onValueChange={(value) => handleSelectChange(value, "matricula")}>
-                <SelectTrigger className="border-[#dadada]">
+                <SelectTrigger className={`border-[#dadada] ${errorFields.matricula ? "border-red-500" : ""}`}>
                   <SelectValue placeholder="Seleccionar matrícula" />
                 </SelectTrigger>
                 <SelectContent>
@@ -306,37 +395,37 @@ export function ParteForm({
                 placeholder="Introducir kms"
                 value={parte.kilometros}
                 onChange={handleInputChange}
-                className="border-[#dadada]"
+                className={`border-[#dadada] ${errorFields.kilometros ? "border-red-500" : ""}`}
                 required
               />
             </div>
             <div className="space-y-2">
-                <label className="text-sm text-gray-600">
-                  Conductor
-                </label>
-                <Select 
-                  value={parte.conductor} 
-                  onValueChange={(value) => handleSelectChange(value, "conductor")}
-                  disabled={userType === 'conductor' && !isEditing}
-                >
-                  <SelectTrigger className="border-[#dadada]">
-                    <SelectValue placeholder="Seleccionar conductor" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {parteData?.conductores?.map((conductor) => (
-                      <SelectItem key={conductor._id} value={conductor.nombre}>
-                        {conductor.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <label className="text-sm text-gray-600">
+                Conductor
+              </label>
+              <Select
+                value={parte.conductor}
+                onValueChange={(value) => handleSelectChange(value, "conductor")}
+                disabled={userType === 'conductor' && !isEditing}
+              >
+                <SelectTrigger className={`border-[#dadada] ${errorFields.conductor ? "border-red-500" : ""}`}>
+                  <SelectValue placeholder="Seleccionar conductor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {parteData?.conductores?.map((conductor) => (
+                    <SelectItem key={conductor._id} value={conductor.nombre}>
+                      {conductor.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <label className="text-sm text-gray-600">
                 Transportista
               </label>
               <Select value={parte.transportista} onValueChange={(value) => handleSelectChange(value, "transportista")}>
-                <SelectTrigger className="border-[#dadada]">
+                <SelectTrigger className={`border-[#dadada] ${errorFields.transportista ? "border-red-500" : ""}`}>
                   <SelectValue placeholder="Seleccionar transportista" />
                 </SelectTrigger>
                 <SelectContent>
@@ -369,8 +458,11 @@ export function ParteForm({
                 <label className="text-sm text-gray-600">
                   Cliente
                 </label>
-                <Select value={linea.cliente} onValueChange={(value) => handleSelectChange(value, "cliente", index)}>
-                  <SelectTrigger className="border-[#dadada]">
+                <Select
+                  value={linea.cliente}
+                  onValueChange={(value) => handleSelectChange(value, "cliente", index)}
+                >
+                  <SelectTrigger className={`border-[#dadada] ${errorFields[`cliente-${index}`] ? "border-red-500" : ""}`}>
                     <SelectValue placeholder="Seleccionar cliente" />
                   </SelectTrigger>
                   <SelectContent>
@@ -393,7 +485,7 @@ export function ParteForm({
                   placeholder="Introducir lugar"
                   value={linea.lugarCarga}
                   onChange={(e) => handleInputChange(e, index)}
-                  className="border-[#dadada]"
+                  className={`border-[#dadada] ${errorFields[`lugarCarga-${index}`] ? "border-red-500" : ""}`}
                   required
                 />
               </div>
@@ -408,7 +500,7 @@ export function ParteForm({
                   placeholder="Introducir lugar"
                   value={linea.lugarDescarga}
                   onChange={(e) => handleInputChange(e, index)}
-                  className="border-[#dadada]"
+                  className={`border-[#dadada] ${errorFields[`lugarDescarga-${index}`] ? "border-red-500" : ""}`}
                   required
                 />
               </div>
@@ -417,36 +509,32 @@ export function ParteForm({
                 <label htmlFor={`espera-${index}`} className="text-sm text-gray-600">
                   Tiempo de espera
                 </label>
-                <div className="relative">
-                  <Clock className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <Input
-                    id={`espera-${index}`}
-                    name="espera"
-                    placeholder="HH:MM"
-                    value={linea.espera}
-                    onChange={(e) => handleInputChange(e, index)}
-                    className="border-[#dadada] pr-10"
-                    required
-                  />
-                </div>
+                <Input
+                  id={`espera-${index}`}
+                  name="espera"
+                  placeholder="HH:MM"
+                  type="time"
+                  value={linea.espera}
+                  onChange={(e) => handleInputChange(e, index)}
+                  className={`border-[#dadada] ${errorFields[`espera-${index}`] ? "border-red-500" : ""}`}
+                  required
+                />
               </div>
 
               <div className="space-y-2">
                 <label htmlFor={`trabajo-${index}`} className="text-sm text-gray-600">
                   Tiempo de trabajo
                 </label>
-                <div className="relative">
-                  <Clock className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <Input
-                    id={`trabajo-${index}`}
-                    name="trabajo"
-                    placeholder="HH:MM"
-                    value={linea.trabajo}
-                    onChange={(e) => handleInputChange(e, index)}
-                    className="border-[#dadada] pr-10"
-                    required
-                  />
-                </div>
+                <Input
+                  id={`trabajo-${index}`}
+                  name="trabajo"
+                  type="time"
+                  placeholder="HH:MM"
+                  value={linea.trabajo}
+                  onChange={(e) => handleInputChange(e, index)}
+                  className={`border-[#dadada] ${errorFields[`trabajo-${index}`] ? "border-red-500" : ""}`}
+                  required
+                />
               </div>
 
               <div className="space-y-2">
@@ -460,7 +548,7 @@ export function ParteForm({
                   placeholder="Tm."
                   value={linea.toneladas}
                   onChange={(e) => handleInputChange(e, index)}
-                  className="border-[#dadada]"
+                  className={`border-[#dadada] ${errorFields[`toneladas-${index}`] ? "border-red-500" : ""}`}
                   required
                 />
               </div>
@@ -470,7 +558,7 @@ export function ParteForm({
                   Material
                 </label>
                 <Select value={linea.material} onValueChange={(value) => handleSelectChange(value, "material", index)}>
-                  <SelectTrigger className="border-[#dadada]">
+                  <SelectTrigger className={`border-[#dadada] ${errorFields[`material-${index}`] ? "border-red-500" : ""}`}>
                     <SelectValue placeholder="Seleccionar material" />
                   </SelectTrigger>
                   <SelectContent>
@@ -488,7 +576,7 @@ export function ParteForm({
                   Jornada
                 </label>
                 <Select value={linea.jornada} onValueChange={(value) => handleSelectChange(value, "jornada", index)}>
-                  <SelectTrigger className="border-[#dadada]">
+                  <SelectTrigger className={`border-[#dadada] ${errorFields[`jornada-${index}`] ? "border-red-500" : ""}`}>
                     <SelectValue placeholder="Seleccionar jornada" />
                   </SelectTrigger>
                   <SelectContent>
