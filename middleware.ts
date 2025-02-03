@@ -23,8 +23,18 @@ export default withAuth(
     }
 
     // Protect conductor routes
-    if (path.startsWith("/conductor-") || path.startsWith("/conductor/") && token?.type !== "conductor") {
+    if ((path.startsWith("/conductor-") || path.startsWith("/conductor/")) && token?.type !== "conductor") {
       return NextResponse.redirect(new URL("/conductor-login", req.url))
+    }
+
+    // Add specific handling for login page
+    if (path === "/login") {
+      // If user is already authenticated as conductor, redirect to conductor dashboard
+      if (token?.type === "conductor") {
+        return NextResponse.redirect(new URL("/conductor-dashboard", req.url))
+      }
+      // Otherwise, allow access to login page
+      return NextResponse.next()
     }
 
     // Protect admin routes
