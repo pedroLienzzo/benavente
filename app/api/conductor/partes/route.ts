@@ -20,9 +20,10 @@ export async function GET() {
     await dbConnect()
     // console.log("4. DB connected, searching partes for conductor:", session.user.name)
 
-    // Get partes for this conductor
-    const partes = await ParteTrabajo.find({ 
-      conductor: session.user.name 
+    // Only select partes assigned to the logged-in conductor that are "Pendiente"
+    const partes = await ParteTrabajo.find({
+      conductor: session.user.name,
+      estado: "Pendiente"
     }).sort({ createdAt: -1 }).lean()
     
     // console.log("5. Partes found:", partes.length)

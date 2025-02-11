@@ -85,7 +85,7 @@ export default function ConductorDashboard() {
           partes.map((parte) => (
             <Link
               key={parte._id}
-              href={`/conductor/partes/${parte._id}`}
+              href={`/conductor/parte/${parte._id}`}
               className="block bg-white rounded-2xl p-4 border border-[#dadada]"
             >
               <div className="flex justify-between items-center">

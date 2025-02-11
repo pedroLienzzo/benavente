@@ -305,15 +305,25 @@ export function ParteForm({
     }
   }
 
+  // Render function for our submit button.
+  const renderSubmitButton = () => (
+    <Button
+      onClick={handleFormSubmit}
+      className="bg-[#002fff] hover:bg-[#002fff]/90 text-white rounded-full px-8"
+    >
+      {isEditing ? "Guardar" : "Crear"}
+    </Button>
+  )
+
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center space-x-4">
+    <div className="container mx-auto py-6 px-4">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+        <div className="flex justify-between sm:justify-start space-x-4 w-full">
           <Link href={backUrl} className="flex items-center text-[#626262] hover:text-[#000000]">
             <ChevronLeft className="w-5 h-5 mr-1" />
             {title}
           </Link>
-          {isEditing && (
+          {isEditing && userType !== 'conductor' ? (
             <Select
               value={parte.estado}
               onValueChange={(value) => handleSelectChange(value, "estado")}
@@ -326,11 +336,25 @@ export function ParteForm({
                 <SelectItem value="Completado">Completado</SelectItem>
               </SelectContent>
             </Select>
+          ) : (
+            <Select
+              value={parte.estado}
+              onValueChange={(value) => handleSelectChange(value, "estado")}
+              disabled={userType === 'conductor'}
+            >
+              <SelectTrigger className={`w-32 bg-[#ffa100] text-white border-0`}>
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Pendiente">Pendiente</SelectItem>
+              </SelectContent>
+            </Select>
           )}
         </div>
-        <Button onClick={handleFormSubmit} className="bg-[#002fff] hover:bg-[#002fff]/90 text-white rounded-full px-8">
-          {isEditing ? "Guardar" : "Crear"}
-        </Button>
+        {/* Desktop-only button (visible on medium screens and up) */}
+        <div className="hidden md:flex">
+          {renderSubmitButton()}
+        </div>
       </div>
 
       {error && (
@@ -350,7 +374,7 @@ export function ParteForm({
       )}
 
       <form onSubmit={handleFormSubmit} className="space-y-6">
-        <div className="bg-white rounded-xl border border-[#dadada] p-6">
+        <div className="bg-white rounded-xl border border-[#dadada] p-4 sm:p-6">
           <h2 className="text-[#002fff] font-medium mb-6">Información</h2>
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
             <div className="space-y-2">
@@ -406,7 +430,7 @@ export function ParteForm({
               <Select
                 value={parte.conductor}
                 onValueChange={(value) => handleSelectChange(value, "conductor")}
-                disabled={userType === 'conductor' && !isEditing}
+                disabled={userType === 'conductor'}
               >
                 <SelectTrigger className={`border-[#dadada] ${errorFields.conductor ? "border-red-500" : ""}`}>
                   <SelectValue placeholder="Seleccionar conductor" />
@@ -441,7 +465,7 @@ export function ParteForm({
         </div>
 
         {parte.lineas.map((linea, index) => (
-          <div key={index} className="bg-white rounded-xl border border-[#dadada] p-6">
+          <div key={index} className="bg-white rounded-xl border border-[#dadada] p-4 sm:p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-[#002fff] font-medium">Línea {index + 1}</h2>
               <Button
@@ -595,11 +619,16 @@ export function ParteForm({
           type="button"
           onClick={addLinea}
           variant="outline"
-          className="bg-[#002fff]/10 text-[#002fff] border-0 rounded-full"
+          className="w-full sm:w-auto bg-[#002fff]/10 text-[#002fff] border-0 rounded-full"
         >
           + Añadir línea
         </Button>
       </form>
+
+      {/* Mobile-only button (visible on small screens) */}
+      <div className="flex md:hidden mt-6 justify-center">
+        {renderSubmitButton()}
+      </div>
     </div>
   )
 }
