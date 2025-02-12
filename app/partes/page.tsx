@@ -13,6 +13,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useRouter } from "next/navigation"
 
 import { ParteTrabajo } from "@/types/parte"
+import { DataTableHeader } from "@/components/ui/data-table-header"
+import { PARTES_TABLE_HEADERS } from "@/config/constants"
 
 export default function PartesPage() {
   const [partes, setPartes] = useState<ParteTrabajo[]>([])
@@ -198,7 +200,7 @@ export default function PartesPage() {
             </SelectContent>
           </Select>
           <Button variant="outline" className="border-[#dadada]" onClick={handleDownload}>
-            <Download className="w-4 h-4 mr-2" />
+            <Download className="w-4 h-4" />
           </Button>
         </div>
       </div>
@@ -206,18 +208,8 @@ export default function PartesPage() {
       {/* Table */}
       <div className="bg-white rounded-xl border border-[#dadada] overflow-hidden">
         <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="font-semibold">Fecha</TableHead>
-              <TableHead className="font-semibold">Matrícula</TableHead>
-              <TableHead className="font-semibold">Kilómetros</TableHead>
-              <TableHead className="font-semibold">Conductor</TableHead>
-              <TableHead className="font-semibold">Transportista</TableHead>
-              <TableHead className="font-semibold">Nº Líneas</TableHead>
-              <TableHead className="font-semibold">Estado</TableHead>
-              <TableHead className="font-semibold">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
+          <DataTableHeader headers={PARTES_TABLE_HEADERS} />
+          
           <TableBody>
             {isLoading
               ? Array.from({ length: 5 }).map((_, index) => (

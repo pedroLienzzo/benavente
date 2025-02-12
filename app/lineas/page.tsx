@@ -10,6 +10,8 @@ import Link from "next/link"
 import { useToast } from "@/components/ui/use-toast"
 import { generateExcel } from "@/lib/excelUtils"
 import { Skeleton } from "@/components/ui/skeleton"
+import { LINEAS_TABLE_HEADERS } from "@/config/constants"
+import { DataTableHeader } from "@/components/ui/data-table-header"
 
 import { Linea } from "@/types/linea"
 
@@ -214,23 +216,7 @@ export default function LineasPage() {
       {/* Table */}
       <div className="bg-white rounded-xl border border-[#dadada] overflow-hidden">
         <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="font-semibold">Fecha</TableHead>
-              <TableHead className="font-semibold">Conductor</TableHead>
-              <TableHead className="font-semibold">Transportista</TableHead>
-              <TableHead className="font-semibold">Vehículo</TableHead>
-              <TableHead className="font-semibold">Cliente</TableHead>
-              <TableHead className="font-semibold">Carga</TableHead>
-              <TableHead className="font-semibold">Descarga</TableHead>
-              <TableHead className="font-semibold">Esp.</TableHead>
-              <TableHead className="font-semibold">Trab.</TableHead>
-              <TableHead className="font-semibold">Tm.</TableHead>
-              <TableHead className="font-semibold">Material</TableHead>
-              <TableHead className="font-semibold">Jornada</TableHead>
-              <TableHead className="font-semibold">Estado</TableHead>
-            </TableRow>
-          </TableHeader>
+          <DataTableHeader headers={LINEAS_TABLE_HEADERS} />
           <TableBody>
             {isLoading
               ? Array.from({ length: 5 }).map((_, index) => (

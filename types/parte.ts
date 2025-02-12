@@ -26,7 +26,6 @@ interface ParteData {
   vehiculos: { _id: string; matricula: string }[]
   clientes: { _id: string; nombre: string }[]
   materiales: { _id: string; nombre: string }[]
-  jornadas: { _id: string; nombre: string }[]
 }
 
 export type { LineaParte, ParteTrabajo, ParteData } 
