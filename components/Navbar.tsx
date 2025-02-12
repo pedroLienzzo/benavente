@@ -92,6 +92,12 @@ const Navbar = () => {
             >
               Materiales
             </Link>
+            <Link
+              href="/jornadas"
+              className={cn("text-[#626262] hover:text-[#000000]", isActive("/jornadas") && "text-[#000000]")}
+            >
+              Jornadas
+            </Link>
           </div>
 
           {/* Right side actions */}

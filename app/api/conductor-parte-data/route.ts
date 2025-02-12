@@ -6,6 +6,7 @@ import Transportista from "@/models/Transportista"
 import Cliente from "@/models/Cliente"
 import Material from "@/models/Material"
 import Conductor from "@/models/Conductor"
+import Jornada from "@/models/Jornada"
 import { authOptions } from "../auth/[...nextauth]/route"
 
 export async function GET() {
@@ -22,12 +23,13 @@ export async function GET() {
     await dbConnect()
     
     // Corrected Promise.all with proper collection queries
-    const [conductores, vehiculos, transportistas, clientes, materiales] = await Promise.all([
+    const [conductores, vehiculos, transportistas, clientes, materiales, jornadas] = await Promise.all([
       Conductor.find({}).sort({ nombre: 1 }).lean(), // Conductores collection
       Vehiculo.find({}).sort({ matricula: 1 }).lean(), // Vehiculos collection (with matricula)
       Transportista.find({}).sort({ nombre: 1 }).lean(), // Transportistas collection
       Cliente.find({}).sort({ nombre: 1 }).lean(), // Clientes collection
       Material.find({}).sort({ nombre: 1 }).lean(), // Materiales collection
+      Jornada.find({}).sort({ nombre: 1 }).lean(), // Jornadas collection
     ])
 
     return NextResponse.json({
@@ -52,6 +54,10 @@ export async function GET() {
       materiales: materiales.map(m => ({
         _id: m._id,
         nombre: m.nombre
+      })),
+      jornadas: jornadas.map(j => ({
+        _id: j._id,
+        nombre: j.nombre
       }))
     })
   } catch (error: any) {

@@ -4,17 +4,9 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { ParteForm } from "@/components/ParteForm"
-import { ParteTrabajo } from "@/types/parte"
+import { ParteData, ParteTrabajo } from "@/types/parte"
 import { useToast } from "@/components/ui/use-toast"
 import LoadingSpinner from "@/components/LoadingSpinner"
-
-interface ParteData {
-  transportistas: { _id: string; nombre: string }[]
-  vehiculos: { _id: string; matricula: string }[]
-  clientes: { _id: string; nombre: string }[]
-  materiales: { _id: string; nombre: string }[]
-}
-
 export default function NuevoParteConductorPage() {
   const router = useRouter()
   const { toast } = useToast()

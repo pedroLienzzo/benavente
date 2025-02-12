@@ -32,7 +32,6 @@ const LineaParteSchema = new mongoose.Schema({
   jornada: {
     type: String,
     required: [true, "Por favor, proporcione la jornada"],
-    enum: ["manana", "tarde", "noche", "completa"],
   },
 })
 

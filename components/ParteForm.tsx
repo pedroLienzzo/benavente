@@ -229,9 +229,8 @@ export function ParteForm({
       errors.push("Por favor, seleccione una matrícula")
       newErrorFields.matricula = true
     }
-    // Validate "Kilómetros" and "Toneladas"
     if (parte.kilometros <= 0) {
-      errors.push(`Kilómetros debe ser mayor que 0`)
+      errors.push("Kilómetros debe ser mayor que 0")
       newErrorFields.kilometros = true
     }
     if (!parte.conductor) {
@@ -256,24 +255,18 @@ export function ParteForm({
         errors.push(`Línea ${index + 1}: Por favor, ingrese un lugar de descarga`)
         newErrorFields[`lugarDescarga-${index}`] = true
       }
-
-      // Validate "Tiempo de espera"
       if (!linea.espera || !/^\d{1,2}:\d{2}$/.test(linea.espera)) {
         errors.push(`Línea ${index + 1}: Por favor, ingrese un tiempo de espera válido (HH:MM)`)
         newErrorFields[`espera-${index}`] = true
       }
-
-      // Validate "Tiempo de trabajo"
       if (!linea.trabajo || !/^\d{1,2}:\d{2}$/.test(linea.trabajo)) {
         errors.push(`Línea ${index + 1}: Por favor, ingrese un tiempo de trabajo válido (HH:MM)`)
         newErrorFields[`trabajo-${index}`] = true
       }
-
       if (linea.toneladas <= 0) {
         errors.push(`Línea ${index + 1}: Toneladas debe ser mayor que 0`)
         newErrorFields[`toneladas-${index}`] = true
       }
-
       if (!linea.material) {
         errors.push(`Línea ${index + 1}: Por favor, seleccione el material`)
         newErrorFields[`material-${index}`] = true
@@ -423,7 +416,7 @@ export function ParteForm({
                 required
               />
             </div>
-            <div className="space-y-2">
+            <div className={`space-y-2 ${userType === 'conductor' ? 'hidden' : ''}`}>
               <label className="text-sm text-gray-600">
                 Conductor
               </label>
@@ -596,18 +589,20 @@ export function ParteForm({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm text-gray-600">
-                  Jornada
-                </label>
-                <Select value={linea.jornada} onValueChange={(value) => handleSelectChange(value, "jornada", index)}>
+                <label className="text-sm text-gray-600">Jornada</label>
+                <Select
+                  value={linea.jornada}
+                  onValueChange={(value) => handleSelectChange(value, "jornada", index)}
+                >
                   <SelectTrigger className={`border-[#dadada] ${errorFields[`jornada-${index}`] ? "border-red-500" : ""}`}>
                     <SelectValue placeholder="Seleccionar jornada" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="manana">Mañana</SelectItem>
-                    <SelectItem value="tarde">Tarde</SelectItem>
-                    <SelectItem value="noche">Noche</SelectItem>
-                    <SelectItem value="completa">Completa</SelectItem>
+                    {parteData?.jornadas?.map((jornada) => (
+                      <SelectItem key={jornada._id} value={jornada.nombre}>
+                        {jornada.nombre}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

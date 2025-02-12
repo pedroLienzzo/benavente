@@ -21,6 +21,7 @@ export default function LineasPage() {
   const [filtroConductor, setFiltroConductor] = useState("")
   const [filtroMatricula, setFiltroMatricula] = useState("")
   const [filtroCliente, setFiltroCliente] = useState("")
+  const [filtroJornada, setFiltroJornada] = useState("")
   const [filtroEstado, setFiltroEstado] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const { toast } = useToast()
@@ -31,7 +32,7 @@ export default function LineasPage() {
 
   useEffect(() => {
     applyFilters()
-  }, [lineas, filtroTexto, filtroFecha, filtroConductor, filtroMatricula, filtroCliente, filtroEstado])
+  }, [lineas, filtroTexto, filtroFecha, filtroConductor, filtroMatricula, filtroCliente, filtroJornada, filtroEstado])
 
   const fetchLineas = async () => {
     setIsLoading(true)
@@ -63,7 +64,9 @@ export default function LineasPage() {
           linea.conductor.toLowerCase().includes(searchTerm) ||
           linea.vehiculo.toLowerCase().includes(searchTerm) ||
           linea.transportista.toLowerCase().includes(searchTerm) ||
-          linea.cliente.toLowerCase().includes(searchTerm),
+          linea.cliente.toLowerCase().includes(searchTerm) ||
+          linea.jornada.toLowerCase().includes(searchTerm) ||
+          linea.estado.toLowerCase().includes(searchTerm)
       )
     }
 
@@ -83,6 +86,10 @@ export default function LineasPage() {
       result = result.filter((linea) => linea.cliente === filtroCliente)
     }
 
+    if (filtroJornada && filtroJornada !== "all") {
+      result = result.filter((linea) => linea.jornada === filtroJornada)
+    }
+
     if (filtroEstado && filtroEstado !== "all") {
       result = result.filter((linea) => linea.estado === filtroEstado)
     }
@@ -93,6 +100,7 @@ export default function LineasPage() {
   const conductoresUnicos = Array.from(new Set(lineas.map((linea) => linea.conductor)))
   const matriculasUnicas = Array.from(new Set(lineas.map((linea) => linea.vehiculo)))
   const clientesUnicos = Array.from(new Set(lineas.map((linea) => linea.cliente)))
+  const jornadasUnicas = Array.from(new Set(lineas.map((linea) => linea.jornada)))
 
   const handleDownload = () => {
     const dataToExport = filteredLineas.map((linea) => ({
@@ -164,15 +172,20 @@ export default function LineasPage() {
               ))}
             </SelectContent>
           </Select>
-          <div className="flex-1 relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <Input
-              className="pl-10 border-[#dadada]"
-              placeholder="Buscar..."
-              value={filtroTexto}
-              onChange={(e) => setFiltroTexto(e.target.value)}
-            />
-          </div>
+          <Select value={filtroJornada} onValueChange={setFiltroJornada}>
+            <SelectTrigger className="w-40 border-[#dadada]">
+              <SelectValue placeholder="Jornada" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas</SelectItem>
+              {jornadasUnicas.map((jornada) => (
+                <SelectItem key={jornada} value={jornada}>
+                  {jornada}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+              
           <Select value={filtroEstado} onValueChange={setFiltroEstado}>
             <SelectTrigger className="w-40 border-[#dadada]">
               <SelectValue placeholder="Estado" />
@@ -183,6 +196,15 @@ export default function LineasPage() {
               <SelectItem value="Completado">Completado</SelectItem>
             </SelectContent>
           </Select>
+          <div className="flex-1 relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Input
+              className="pl-10 border-[#dadada]"
+              placeholder="Buscar..."
+              value={filtroTexto}
+              onChange={(e) => setFiltroTexto(e.target.value)}
+            />
+          </div>
           <Button variant="outline" className="border-[#dadada]" onClick={handleDownload}>
             <Download className="w-4 h-4 mr-2" />
           </Button>
@@ -205,6 +227,7 @@ export default function LineasPage() {
               <TableHead className="font-semibold">Trab.</TableHead>
               <TableHead className="font-semibold">Tm.</TableHead>
               <TableHead className="font-semibold">Material</TableHead>
+              <TableHead className="font-semibold">Jornada</TableHead>
               <TableHead className="font-semibold">Estado</TableHead>
             </TableRow>
           </TableHeader>
@@ -246,6 +269,9 @@ export default function LineasPage() {
                       <Skeleton className="h-4 w-32" />
                     </TableCell>
                     <TableCell>
+                      <Skeleton className="h-4 w-16" />
+                    </TableCell>
+                    <TableCell>
                       <Skeleton className="h-6 w-20 rounded-full" />
                     </TableCell>
                   </TableRow>
@@ -263,6 +289,7 @@ export default function LineasPage() {
                     <TableCell>{linea.trabajo}</TableCell>
                     <TableCell>{linea.toneladas}</TableCell>
                     <TableCell>{linea.material}</TableCell>
+                    <TableCell>{linea.jornada}</TableCell>
                     <TableCell>
                       <span
                         className={`px-3 py-1 rounded-full text-sm ${

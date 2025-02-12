@@ -12,6 +12,7 @@ interface Linea {
   trabajo: string
   toneladas: number
   material: string
+  jornada: string
   estado: "Pendiente" | "Completado"
 }
 

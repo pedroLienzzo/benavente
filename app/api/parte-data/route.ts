@@ -10,22 +10,22 @@ import Jornada from "@/models/Jornada"
 export async function GET() {
   try {
     await dbConnect()
-    const [conductores, transportistas, jornadas, vehiculos, clientes, materiales] = await Promise.all([
+    const [conductores, transportistas, vehiculos, clientes, materiales, jornadas] = await Promise.all([
       Conductor.find({}).sort({ nombre: 1 }).lean(),
       Transportista.find({}).sort({ nombre: 1 }).lean(),
-      Jornada.find({}).sort({ nombre: 1 }).lean(),  
       Vehiculo.find({}).sort({ matricula: 1 }).lean(),
       Cliente.find({}).sort({ nombre: 1 }).lean(),
       Material.find({}).sort({ nombre: 1 }).lean(),
+      Jornada.find({}).sort({ nombre: 1 }).lean(),  
     ])
 
     return NextResponse.json({
       conductores,
       transportistas,
-      jornadas,
       vehiculos,
       clientes,
       materiales,
+      jornadas,
     })
   } catch (error: any) {
     console.error("Error al obtener los datos para el parte:", error)
