@@ -316,7 +316,7 @@ export function ParteForm({
             <ChevronLeft className="w-5 h-5 mr-1" />
             {title}
           </Link>
-          {isEditing && userType !== 'conductor' ? (
+          {isEditing && userType !== 'conductor' && (
             <Select
               value={parte.estado}
               onValueChange={(value) => handleSelectChange(value, "estado")}
@@ -327,19 +327,6 @@ export function ParteForm({
               <SelectContent>
                 <SelectItem value="Pendiente">Pendiente</SelectItem>
                 <SelectItem value="Completado">Completado</SelectItem>
-              </SelectContent>
-            </Select>
-          ) : (
-            <Select
-              value={parte.estado}
-              onValueChange={(value) => handleSelectChange(value, "estado")}
-              disabled={userType === 'conductor'}
-            >
-              <SelectTrigger className={`w-32 bg-[#ffa100] text-white border-0`}>
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Pendiente">Pendiente</SelectItem>
               </SelectContent>
             </Select>
           )}
